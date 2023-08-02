@@ -1,8 +1,8 @@
 namespace EC_Simulation
 {
-    public partial class Form1 : Form
+    public partial class SimulationMain : Form
     {
-        public Form1()
+        public SimulationMain()
         {
             InitializeComponent();
         }

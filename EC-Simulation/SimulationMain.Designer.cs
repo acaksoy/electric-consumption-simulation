@@ -28,12 +28,46 @@
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
+            importWeatherDataButton = new Button();
+            importLabelWD = new Label();
+            SuspendLayout();
+            // 
+            // importWeatherDataButton
+            // 
+            importWeatherDataButton.Location = new Point(25, 297);
+            importWeatherDataButton.Name = "importWeatherDataButton";
+            importWeatherDataButton.Size = new Size(137, 30);
+            importWeatherDataButton.TabIndex = 0;
+            importWeatherDataButton.Tag = "";
+            importWeatherDataButton.Text = "Import Weather Data";
+            importWeatherDataButton.UseVisualStyleBackColor = true;
+            importWeatherDataButton.Click += importWeatherDataButton_Click;
+            // 
+            // importLabelWD
+            // 
+            importLabelWD.AutoSize = true;
+            importLabelWD.Location = new Point(168, 305);
+            importLabelWD.Name = "importLabelWD";
+            importLabelWD.Size = new Size(82, 15);
+            importLabelWD.TabIndex = 1;
+            importLabelWD.Text = "- Select a file -";
+            // 
+            // SimulationMain
+            // 
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Text = "Form1";
+            Controls.Add(importLabelWD);
+            Controls.Add(importWeatherDataButton);
+            Name = "SimulationMain";
+            Text = "Simulation";
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
+
+        private Button importWeatherDataButton;
+        private Label importLabelWD;
     }
 }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,11 +12,18 @@ namespace SimulationClassLibrary
 {
     public class SimulationManager
     {
-        public List<Hour> hours { get; set; }
+        
+        private List<Hour> hours { get;  set; }
+        private List<SolarPanel> solarPanels { get; set; }
+        private List<WindTurbine> windTurbines { get; set; }
+        private List<HydroPowerPlant> hydroPowerPlants { get; set; }
         public SimulationManager() {
             hours = new List<Hour>();
         }
-        
+        public void InitilazieProducers()
+        {
+
+        }
         public void FillCalendar(TextFieldParser parser)
         {
             parser.ReadLine(); // passing first row

@@ -35,7 +35,7 @@ namespace EC_Simulation
                     parser.SetDelimiters(";");
                     simulationManager.FillCalendar(parser);
 
-                    MessageBox.Show("File path added: " + fileName + " - Data- first: " + simulationManager.hours.First().Date.ToString() + " - Data- last: " + simulationManager.hours.Last().Date.ToString());
+                    //MessageBox.Show("File path added: " + fileName + " - Data- first: " + simulationManager.hours.First().Date.ToString() + " - Data- last: " + simulationManager.hours.Last().Date.ToString());
                 }
             }
         }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SimulationClassLibrary
 {
-    public class Hour
+    internal class Hour
     {
         public DateTime Date { get; set; }
         public int SolarIrradiance { get; set; } // W/m²

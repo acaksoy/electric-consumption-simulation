@@ -6,9 +6,12 @@ using System.Threading.Tasks;
 
 namespace SimulationClassLibrary
 {
-    internal class Month
+    internal abstract class ElectricityProducer
     {
-        private List<Day> days;
-        public Month() { }
+
+        public ElectricityProducer() { }
+
+        public abstract float ProduceElectricity(Hour hour);
+
     }
 }

@@ -18,11 +18,10 @@ namespace SimulationClassLibrary
         private float operatingTemp;
         private float tempCoefficient;
 
-        public SolarPanel(float efficiency, float area, float noct, float operatingTemp, float tempCoefficient) { 
+        public SolarPanel(float efficiency, float area, float noct, float tempCoefficient) { 
             this.efficiency = efficiency;
             this.area = area;
             this.noct = noct;
-            this.operatingTemp = operatingTemp;
             this.tempCoefficient = tempCoefficient;
         }
 

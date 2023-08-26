@@ -8,14 +8,24 @@ namespace SimulationClassLibrary
 {
     internal class WindTurbine : ElectricityProducer
     {
-        private static float airDenstiy;
+        private static float kelvin = 273.15f;
+        private static float gasConstatn = 287.05f;
 
+        private float airDenstiy;
         private float bladeArea;
         private float powerCoefficent;
         private float availablity;
-        
+
+        public WindTurbine(float bladeArea, float powerCoefficent, float availablity)
+        {
+            this.bladeArea = bladeArea;
+            this.powerCoefficent = powerCoefficent;
+            this.availablity = availablity;
+        }
+
         public override float ProduceElectricity(Hour hour)
         {
+            airDenstiy = hour.AirPressure*100 / (gasConstatn * (hour.Temperature + kelvin)); //100 -> hPa to Pa. air density in kg/m3
             float power = 0.5f * airDenstiy * bladeArea * powerCoefficent * availablity * (float)Math.Pow(hour.WindSpeed, 3);
             return power;
         }

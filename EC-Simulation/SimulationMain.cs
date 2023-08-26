@@ -3,16 +3,30 @@ using System.CodeDom;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using SimulationClassLibrary;
+using System.Windows.Forms;
+using System.Xml.Linq;
+using System.Diagnostics.Eventing.Reader;
+using System.ComponentModel;
 
 namespace EC_Simulation
 {
     public partial class SimulationMain : Form
     {
         private SimulationManager simulationManager = new SimulationManager();
-        private string fileName= string.Empty;
+
+        public TextFieldParser weatherParser;
+        private bool weatherDataParsed = false;
+
+
+        private ErrorProvider errorProvider1;
+
+        private string fileName = string.Empty;
         public SimulationMain()
         {
             InitializeComponent();
+
+            errorProvider1 = new ErrorProvider();
+
         }
 
         private void importWeatherDataButton_Click(object sender, EventArgs e) // Before deleting, clear "click" prop in designer.
@@ -33,11 +47,74 @@ namespace EC_Simulation
                     TextFieldParser parser = new TextFieldParser(openFileDialog.FileName);
                     parser.TextFieldType = FieldType.Delimited;
                     parser.SetDelimiters(";");
-                    simulationManager.FillCalendar(parser);
+                    weatherParser = parser;
+                    //simulationManager.FillCalendar(parser);
+                    weatherDataParsed = true;
 
-                    //MessageBox.Show("File path added: " + fileName + " - Data- first: " + simulationManager.hours.First().Date.ToString() + " - Data- last: " + simulationManager.hours.Last().Date.ToString());
+ 
                 }
             }
+        }
+
+        private void validateTextBox_float(object sender, CancelEventArgs e)
+        {
+
+            TextBox tb = (TextBox)sender;
+            float value;
+            bool parseSuccess = float.TryParse(tb.Text, out value);
+            if (String.IsNullOrEmpty(tb.Text) || !parseSuccess)
+            {
+                errorProvider1.SetError(tb, "Enter a float value");
+                e.Cancel = true;
+                return;
+            }
+
+            errorProvider1.SetError(tb, String.Empty);
+        }
+        private void validateTextBox_int(object sender, CancelEventArgs e)
+        {
+            TextBox tb = (TextBox)sender;
+            int value;
+            bool parseSuccess = int.TryParse(tb.Text, out value);
+            if (String.IsNullOrEmpty(tb.Text) || !parseSuccess)
+            {
+                errorProvider1.SetError(tb, "Enter a int value");
+                e.Cancel = true;
+                return;
+            }
+
+            errorProvider1.SetError(tb, String.Empty);
+        }
+
+
+        private void startSimulationButton_Click(object sender, EventArgs e)
+        {
+            if (ValidateChildren())
+            {
+                if (!weatherDataParsed)
+                {
+                    errorProvider1.SetError(importWeatherDataButton, "Select a weather data");
+                    MessageBox.Show("Fill all fields correctly");
+                    return;
+                }
+                simulationManager.FillCalendar(weatherParser);
+
+                simulationManager.InitilazieSolarPanels(int.Parse(solarPanelParamSpecTextBox5.Text), float.Parse(solarPanelParamSpecTextBox1.Text), float.Parse(solarPanelParamSpecTextBox2.Text), float.Parse(solarPanelParamSpecTextBox3.Text), float.Parse(solarPanelParamSpecTextBox4.Text));
+                simulationManager.InitilazieWindTurbines(int.Parse(windTurbineParamSpecTextBox4.Text), float.Parse(windTurbineParamSpecTextBox1.Text), float.Parse(windTurbineParamSpecTextBox2.Text), float.Parse(windTurbineParamSpecTextBox3.Text));
+                simulationManager.InitilazieHydroPowerPlanets(int.Parse(hydroPlantParamSpecTextBox3.Text), float.Parse(hydroPlantParamSpecTextBox1.Text), float.Parse(hydroPlantParamSpecTextBox2.Text));
+                MessageBox.Show("ready");
+            }
+            else
+            {
+                MessageBox.Show("Fill all fields correctly");
+                return;               
+            }
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            e.Cancel = false;
+            base.OnFormClosing(e);
         }
     }
 }

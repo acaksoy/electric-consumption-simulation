@@ -54,7 +54,7 @@ namespace SimulationClassLibrary
             {
                 
                 row = parser.ReadFields();
-                for(int i=0; i<6; i++) //checks if columns has empty data
+                for(int i=0; i< row.Length; i++) //checks if columns has empty data
                 {
                     if (row[i] == "")
                     {

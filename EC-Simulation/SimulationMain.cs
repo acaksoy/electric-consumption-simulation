@@ -15,7 +15,10 @@ namespace EC_Simulation
         private SimulationManager simulationManager = new SimulationManager();
 
         public TextFieldParser weatherParser;
-        private bool weatherDataParsed = false;
+        public TextFieldParser consumerDataParser;
+
+        private bool isWeatherDataParsed = false;
+        private bool isConsumerDataParsed = false;
 
 
         private ErrorProvider errorProvider1;
@@ -49,9 +52,9 @@ namespace EC_Simulation
                     parser.SetDelimiters(";");
                     weatherParser = parser;
                     //simulationManager.FillCalendar(parser);
-                    weatherDataParsed = true;
+                    isWeatherDataParsed = true;
 
- 
+
                 }
             }
         }
@@ -91,13 +94,14 @@ namespace EC_Simulation
         {
             if (ValidateChildren())
             {
-                if (!weatherDataParsed)
+                if (!isWeatherDataParsed || !isConsumerDataParsed)
                 {
-                    errorProvider1.SetError(importWeatherDataButton, "Select a weather data");
+                    errorProvider1.SetError(importWeatherDataButton, "Import all data needed.");
                     MessageBox.Show("Fill all fields correctly");
                     return;
                 }
                 simulationManager.FillCalendar(weatherParser);
+                simulationManager.FillConsumer(consumerDataParser);
 
                 simulationManager.InitilazieSolarPanels(int.Parse(solarPanelParamSpecTextBox5.Text), float.Parse(solarPanelParamSpecTextBox1.Text), float.Parse(solarPanelParamSpecTextBox2.Text), float.Parse(solarPanelParamSpecTextBox3.Text), float.Parse(solarPanelParamSpecTextBox4.Text));
                 simulationManager.InitilazieWindTurbines(int.Parse(windTurbineParamSpecTextBox4.Text), float.Parse(windTurbineParamSpecTextBox1.Text), float.Parse(windTurbineParamSpecTextBox2.Text), float.Parse(windTurbineParamSpecTextBox3.Text));
@@ -107,7 +111,7 @@ namespace EC_Simulation
             else
             {
                 MessageBox.Show("Fill all fields correctly");
-                return;               
+                return;
             }
         }
 
@@ -115,6 +119,33 @@ namespace EC_Simulation
         {
             e.Cancel = false;
             base.OnFormClosing(e);
+        }
+
+        private void importConsumerDataButton_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.InitialDirectory = "c:\\";
+                openFileDialog.Filter = "CSV file (*.csv)|*.csv";
+                openFileDialog.FilterIndex = 1;
+                openFileDialog.RestoreDirectory = true;
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // control csv structure? headers?
+                    fileName = openFileDialog.SafeFileName;
+                    ImportLabelCD.Text = fileName;
+
+                    TextFieldParser parser = new TextFieldParser(openFileDialog.FileName);
+                    parser.TextFieldType = FieldType.Delimited;
+                    parser.SetDelimiters(";");
+                    consumerDataParser = parser;
+                    //simulationManager.FillCalendar(parser);
+                    isConsumerDataParsed = true;
+
+
+                }
+            }
         }
     }
 }

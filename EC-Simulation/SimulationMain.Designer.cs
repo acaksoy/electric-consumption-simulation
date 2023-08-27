@@ -63,6 +63,8 @@
             solarPanelParamLabel = new Label();
             label1 = new Label();
             startSimulationButton = new Button();
+            importConsumerDataButton = new Button();
+            ImportLabelCD = new Label();
             productionParamPanel.SuspendLayout();
             hydroPlantParamPanel.SuspendLayout();
             windTurbinelParamPanel.SuspendLayout();
@@ -404,12 +406,33 @@
             startSimulationButton.UseVisualStyleBackColor = true;
             startSimulationButton.Click += startSimulationButton_Click;
             // 
+            // importConsumerDataButton
+            // 
+            importConsumerDataButton.Location = new Point(18, 478);
+            importConsumerDataButton.Name = "importConsumerDataButton";
+            importConsumerDataButton.Size = new Size(150, 32);
+            importConsumerDataButton.TabIndex = 5;
+            importConsumerDataButton.Text = "Import Consumer Data";
+            importConsumerDataButton.UseVisualStyleBackColor = true;
+            importConsumerDataButton.Click += importConsumerDataButton_Click;
+            // 
+            // ImportLabelCD
+            // 
+            ImportLabelCD.AutoSize = true;
+            ImportLabelCD.Location = new Point(174, 487);
+            ImportLabelCD.Name = "ImportLabelCD";
+            ImportLabelCD.Size = new Size(84, 15);
+            ImportLabelCD.TabIndex = 6;
+            ImportLabelCD.Text = "- Select a File -";
+            // 
             // SimulationMain
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoValidate = AutoValidate.EnableAllowFocusChange;
             ClientSize = new Size(985, 574);
+            Controls.Add(ImportLabelCD);
+            Controls.Add(importConsumerDataButton);
             Controls.Add(startSimulationButton);
             Controls.Add(label1);
             Controls.Add(productionParamPanel);
@@ -466,5 +489,7 @@
         private Label hydroPlantParamSpecLabel1;
         private Label hydroPlantParamLabel;
         private Button startSimulationButton;
+        private Button importConsumerDataButton;
+        private Label ImportLabelCD;
     }
 }

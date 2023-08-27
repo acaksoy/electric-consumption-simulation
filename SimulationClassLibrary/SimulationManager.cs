@@ -17,11 +17,14 @@ namespace SimulationClassLibrary
         private List<SolarPanel> solarPanels { get; set; }
         private List<WindTurbine> windTurbines { get; set; }
         private List<HydroPowerPlant> hydroPowerPlants { get; set; }
+
+        private List<Houshold> housholds { get; set; }
         public SimulationManager() {
             hours = new List<Hour>();
             solarPanels = new List<SolarPanel>();
             windTurbines = new List<WindTurbine>();
             hydroPowerPlants = new List<HydroPowerPlant>();
+            housholds = new List<Houshold>();
         }
  
         public void InitilazieSolarPanels(int amount, float efficiency, float area, float noct, float tempCoefficient)
@@ -67,6 +70,43 @@ namespace SimulationClassLibrary
             }  
             parser.Close();
             Console.WriteLine("hour example: " + hours[10].Date + " --- " + hours[10].AirPressure);
+        }
+        public void FillConsumer(TextFieldParser parser)
+        {
+            bool firstLine = true;
+            string[] row = { };
+            string[] columnNames = { };
+
+            List<ConsumeValue> consumeValuePair = new List<ConsumeValue>();
+            List<HourlyConsumption> schedule = new List<HourlyConsumption>(); // holds every hour
+            
+            while (!parser.EndOfData)
+            {
+                if (firstLine) // get column names
+                {
+                    columnNames = parser.ReadFields();
+                    firstLine = false;
+                    continue;
+                }
+                row = parser.ReadFields();
+                for (int i = 0; i < row.Length; i++) //checks if columns has empty data
+                {
+                    if (row[i] == "")
+                    {
+                        row[i] = "0";
+                    }
+                   
+                }
+                DateTime date = DateTime.ParseExact(row[0], "g", CultureInfo.CurrentCulture); // save date
+                for (int i = 1; i < row.Length; i++) //get every value and columnname
+                {
+                    consumeValuePair.Add(new ConsumeValue(columnNames[i], float.Parse(row[i])));
+                }
+                schedule.Add(new HourlyConsumption(date, consumeValuePair));
+            }
+            housholds.Add(new Houshold("res1", 10, schedule));
+
+            parser.Close();
         }
         
     }

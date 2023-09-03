@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SimulationClassLibrary
 {
-    internal class HydroPowerPlant : ElectricityProducer
+    public class HydroPowerPlant : ElectricityProducer
     {
         private static float GravitationalForce = 9.8f;
         private static float WaterDensity = 997;

@@ -29,12 +29,14 @@
         private void InitializeComponent()
         {
             loggerTextBox = new TextBox();
+            simulationProgressBar = new ProgressBar();
+            simProgresLabel = new Label();
             SuspendLayout();
             // 
             // loggerTextBox
             // 
             loggerTextBox.BackColor = SystemColors.Window;
-            loggerTextBox.Location = new Point(166, 37);
+            loggerTextBox.Location = new Point(170, 91);
             loggerTextBox.Multiline = true;
             loggerTextBox.Name = "loggerTextBox";
             loggerTextBox.ReadOnly = true;
@@ -42,14 +44,33 @@
             loggerTextBox.Size = new Size(460, 303);
             loggerTextBox.TabIndex = 0;
             // 
+            // simulationProgressBar
+            // 
+            simulationProgressBar.Location = new Point(170, 41);
+            simulationProgressBar.Name = "simulationProgressBar";
+            simulationProgressBar.Size = new Size(460, 23);
+            simulationProgressBar.TabIndex = 1;
+            // 
+            // simProgresLabel
+            // 
+            simProgresLabel.AutoSize = true;
+            simProgresLabel.Location = new Point(363, 23);
+            simProgresLabel.Name = "simProgresLabel";
+            simProgresLabel.Size = new Size(76, 15);
+            simProgresLabel.TabIndex = 2;
+            simProgresLabel.Text = "Simulating ...";
+            // 
             // Simulator
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(simProgresLabel);
+            Controls.Add(simulationProgressBar);
             Controls.Add(loggerTextBox);
             Name = "Simulator";
             Text = "Simulator";
+            Shown += Simulator_Shown;
             ResumeLayout(false);
             PerformLayout();
         }
@@ -57,5 +78,7 @@
         #endregion
 
         private TextBox loggerTextBox;
+        private ProgressBar simulationProgressBar;
+        private Label simProgresLabel;
     }
 }

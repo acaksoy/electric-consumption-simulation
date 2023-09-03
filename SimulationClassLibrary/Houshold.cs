@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,7 +27,7 @@ namespace SimulationClassLibrary
         public string Name;
         public float Value;
     }
-    internal class Houshold : ElectricityConsumer
+    public class Houshold : ElectricityConsumer
     {
         private string name;
         private int numberOfHousholds;
@@ -38,15 +39,16 @@ namespace SimulationClassLibrary
             this.numberOfHousholds = numberOfHousholds;
             this.schedule = schedules;
         }
-        public override float ConsumeElectricity(Hour hour)
+        public override float ConsumeElectricity(Hour hour) // kWh because of data
         {
+            
             float totalConsumption=0;
             foreach (HourlyConsumption hourlyCon in schedule)
             {
-                if(hour.Date == hourlyCon.Date)
+                if (DateTime.Compare(hour.Date, hourlyCon.Date) == 0) //all consume values are under single date
                 {
-                    foreach(ConsumeValue consumption in hourlyCon.ConsumeValues)
-                    {
+                    foreach (ConsumeValue consumption in hourlyCon.ConsumeValues)
+                    { 
                         totalConsumption += consumption.Value;
                     }
                 }

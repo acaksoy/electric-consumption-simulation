@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace SimulationClassLibrary
 {
-    internal class SolarPanel : ElectricityProducer
+    public class SolarPanel : ElectricityProducer
     {
         private static float refTemp = 25;
         private static float ambientTemp = 20;

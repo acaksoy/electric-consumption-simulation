@@ -58,7 +58,32 @@ namespace EC_Simulation
                 }
             }
         }
+        private void importConsumerDataButton_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.InitialDirectory = "c:\\";
+                openFileDialog.Filter = "CSV file (*.csv)|*.csv";
+                openFileDialog.FilterIndex = 1;
+                openFileDialog.RestoreDirectory = true;
 
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // control csv structure? headers?
+                    fileName = openFileDialog.SafeFileName;
+                    ImportLabelCD.Text = fileName;
+
+                    TextFieldParser parser = new TextFieldParser(openFileDialog.FileName);
+                    parser.TextFieldType = FieldType.Delimited;
+                    parser.SetDelimiters(";");
+                    consumerDataParser = parser;
+                    //simulationManager.FillCalendar(parser);
+                    isConsumerDataParsed = true;
+
+
+                }
+            }
+        }
         private void validateTextBox_float(object sender, CancelEventArgs e)
         {
 
@@ -88,7 +113,7 @@ namespace EC_Simulation
 
             errorProvider1.SetError(tb, String.Empty);
         }
-
+        //TODO: sim icin ayri thread ay ui kilitliyor. sayilar dogru okunmuyor.
 
         private void startSimulationButton_Click(object sender, EventArgs e)
         {
@@ -107,6 +132,8 @@ namespace EC_Simulation
                 simulationManager.InitilazieWindTurbines(int.Parse(windTurbineParamSpecTextBox4.Text), float.Parse(windTurbineParamSpecTextBox1.Text), float.Parse(windTurbineParamSpecTextBox2.Text), float.Parse(windTurbineParamSpecTextBox3.Text));
                 simulationManager.InitilazieHydroPowerPlanets(int.Parse(hydroPlantParamSpecTextBox3.Text), float.Parse(hydroPlantParamSpecTextBox1.Text), float.Parse(hydroPlantParamSpecTextBox2.Text));
                 MessageBox.Show("ready");
+                Simulator sim = new Simulator(simulationManager);
+                sim.Show();
             }
             else
             {
@@ -121,31 +148,6 @@ namespace EC_Simulation
             base.OnFormClosing(e);
         }
 
-        private void importConsumerDataButton_Click(object sender, EventArgs e)
-        {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
-            {
-                openFileDialog.InitialDirectory = "c:\\";
-                openFileDialog.Filter = "CSV file (*.csv)|*.csv";
-                openFileDialog.FilterIndex = 1;
-                openFileDialog.RestoreDirectory = true;
-
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    // control csv structure? headers?
-                    fileName = openFileDialog.SafeFileName;
-                    ImportLabelCD.Text = fileName;
-
-                    TextFieldParser parser = new TextFieldParser(openFileDialog.FileName);
-                    parser.TextFieldType = FieldType.Delimited;
-                    parser.SetDelimiters(";");
-                    consumerDataParser = parser;
-                    //simulationManager.FillCalendar(parser);
-                    isConsumerDataParsed = true;
-
-
-                }
-            }
-        }
+        
     }
 }

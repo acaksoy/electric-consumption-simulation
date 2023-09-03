@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SimulationClassLibrary
 {
-    internal abstract class ElectricityProducer
+    public abstract class ElectricityProducer
     {
 
         public ElectricityProducer() { }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SimulationClassLibrary
 {
-    internal class WindTurbine : ElectricityProducer
+    public class WindTurbine : ElectricityProducer
     {
         private static float kelvin = 273.15f;
         private static float gasConstatn = 287.05f;

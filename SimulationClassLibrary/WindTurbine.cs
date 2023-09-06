@@ -25,6 +25,8 @@ namespace SimulationClassLibrary
 
         public override float ProduceElectricity(Hour hour)
         {
+            if (hour.WindSpeed < 3.5f || hour.WindSpeed > 25) return 0;
+
             airDenstiy = hour.AirPressure*100 / (gasConstatn * (hour.Temperature + kelvin)); //100 -> hPa to Pa. air density in kg/m3
             float power = 0.5f * airDenstiy * bladeArea * powerCoefficent * availablity * (float)Math.Pow(hour.WindSpeed, 3);
             return power;

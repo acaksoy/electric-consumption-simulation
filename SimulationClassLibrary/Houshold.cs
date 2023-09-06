@@ -23,6 +23,7 @@ namespace SimulationClassLibrary
         {
             Name = name;
             Value = value;
+            // get set Value*katsayi dirty mirty bi bakalim ona
         }
         public string Name;
         public float Value;
@@ -41,7 +42,6 @@ namespace SimulationClassLibrary
         }
         public override float ConsumeElectricity(Hour hour) // kWh because of data
         {
-            
             float totalConsumption=0;
             foreach (HourlyConsumption hourlyCon in schedule)
             {
@@ -55,5 +55,6 @@ namespace SimulationClassLibrary
             }
             return totalConsumption * numberOfHousholds;
         }
+
     }
 }

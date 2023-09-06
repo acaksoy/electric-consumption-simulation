@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace EC_Simulation
 {
@@ -116,8 +117,12 @@ namespace EC_Simulation
                 hydroPowerPlants.Add(new HydroPowerPlant(height, efficiency));
             }
         }
-        public void FillCalendar(TextFieldParser parser) // control data
+        public void FillCalendar(string filePath) // control data
         {
+            TextFieldParser parser = new TextFieldParser(filePath);
+            parser.TextFieldType = FieldType.Delimited;
+            parser.SetDelimiters(";");
+
             parser.ReadLine(); // passing first row
             string[] row = { };
             while (!parser.EndOfData)
@@ -138,8 +143,12 @@ namespace EC_Simulation
             parser.Close();
             Console.WriteLine("hour example: " + hours[10].Date + " --- " + hours[10].AirPressure);
         }
-        public void FillConsumer(TextFieldParser parser)
+        public void FillConsumer(string filePath) // TextFieldParser parser
         {
+            TextFieldParser parser = new TextFieldParser(filePath);
+            parser.TextFieldType = FieldType.Delimited;
+            parser.SetDelimiters(";");
+
             bool firstLine = true;
             string[] row = { };
             string[] columnNames = { };

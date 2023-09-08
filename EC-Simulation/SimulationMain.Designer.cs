@@ -70,9 +70,9 @@
             label20 = new Label();
             publicAmountTextBox = new TextBox();
             importPublicBtn1 = new Button();
-            label21 = new Label();
-            label18 = new Label();
-            label15 = new Label();
+            labelPublic = new Label();
+            labelBusiness3 = new Label();
+            labelBusiness2 = new Label();
             panel7 = new Panel();
             label17 = new Label();
             businessAmountTextBox3 = new TextBox();
@@ -83,25 +83,25 @@
             businessAmountTextBox2 = new TextBox();
             importBusinessBtn2 = new Button();
             ImportLabelBusiness2 = new Label();
-            label3 = new Label();
+            labelBusiness1 = new Label();
             panel5 = new Panel();
             label11 = new Label();
             businessAmountTextBox1 = new TextBox();
             ImportLabelBusiness1 = new Label();
             importBusinessBtn1 = new Button();
-            label8 = new Label();
+            labelHousehold2 = new Label();
             panel4 = new Panel();
             label9 = new Label();
             householdAmountTextBox2 = new TextBox();
             ImportLabelHousehold2 = new Label();
             importHouseholdBtn2 = new Button();
-            label5 = new Label();
+            labelHousehold3 = new Label();
             panel3 = new Panel();
             label6 = new Label();
             householdAmountTextBox3 = new TextBox();
             ImportLabelHousehold3 = new Label();
             importHouseholdBtn3 = new Button();
-            label2 = new Label();
+            labelHousehold1 = new Label();
             panel2 = new Panel();
             label4 = new Label();
             householdAmountTextBox1 = new TextBox();
@@ -133,7 +133,6 @@
             importWeatherDataButton.Text = "Import Weather Data";
             importWeatherDataButton.UseVisualStyleBackColor = true;
             importWeatherDataButton.Click += importData_Click;
-            importWeatherDataButton.Validating += validateImport;
             // 
             // importLabelWD
             // 
@@ -458,6 +457,7 @@
             startSimulationButton.Text = "Start";
             startSimulationButton.UseVisualStyleBackColor = true;
             startSimulationButton.Click += startSimulationButton_Click;
+            startSimulationButton.Validating += validateImport;
             // 
             // importHouseholdBtn1
             // 
@@ -465,26 +465,27 @@
             importHouseholdBtn1.Name = "importHouseholdBtn1";
             importHouseholdBtn1.Size = new Size(150, 23);
             importHouseholdBtn1.TabIndex = 5;
+            importHouseholdBtn1.Tag = "Houshold-1";
             importHouseholdBtn1.Text = "Import Consumer Data";
             importHouseholdBtn1.UseVisualStyleBackColor = true;
-            importHouseholdBtn1.Validating += validateImport;
+            importHouseholdBtn1.Click += importData_Click;
             // 
             // panel1
             // 
             panel1.BorderStyle = BorderStyle.FixedSingle;
             panel1.Controls.Add(panel8);
-            panel1.Controls.Add(label21);
-            panel1.Controls.Add(label18);
-            panel1.Controls.Add(label15);
+            panel1.Controls.Add(labelPublic);
+            panel1.Controls.Add(labelBusiness3);
+            panel1.Controls.Add(labelBusiness2);
             panel1.Controls.Add(panel7);
             panel1.Controls.Add(panel6);
-            panel1.Controls.Add(label3);
+            panel1.Controls.Add(labelBusiness1);
             panel1.Controls.Add(panel5);
-            panel1.Controls.Add(label8);
+            panel1.Controls.Add(labelHousehold2);
             panel1.Controls.Add(panel4);
-            panel1.Controls.Add(label5);
+            panel1.Controls.Add(labelHousehold3);
             panel1.Controls.Add(panel3);
-            panel1.Controls.Add(label2);
+            panel1.Controls.Add(labelHousehold1);
             panel1.Controls.Add(panel2);
             panel1.Location = new Point(18, 27);
             panel1.Name = "panel1";
@@ -535,36 +536,37 @@
             importPublicBtn1.Name = "importPublicBtn1";
             importPublicBtn1.Size = new Size(150, 23);
             importPublicBtn1.TabIndex = 5;
+            importPublicBtn1.Tag = "Public";
             importPublicBtn1.Text = "Import Consumer Data";
             importPublicBtn1.UseVisualStyleBackColor = true;
-            importPublicBtn1.Validating += validateImport;
+            importPublicBtn1.Click += importData_Click;
             // 
-            // label21
+            // labelPublic
             // 
-            label21.AutoSize = true;
-            label21.Location = new Point(16, 331);
-            label21.Name = "label21";
-            label21.Size = new Size(40, 15);
-            label21.TabIndex = 10;
-            label21.Text = "Public";
+            labelPublic.AutoSize = true;
+            labelPublic.Location = new Point(16, 331);
+            labelPublic.Name = "labelPublic";
+            labelPublic.Size = new Size(40, 15);
+            labelPublic.TabIndex = 10;
+            labelPublic.Text = "Public";
             // 
-            // label18
+            // labelBusiness3
             // 
-            label18.AutoSize = true;
-            label18.Location = new Point(264, 227);
-            label18.Name = "label18";
-            label18.Size = new Size(63, 15);
-            label18.TabIndex = 10;
-            label18.Text = "Business-3";
+            labelBusiness3.AutoSize = true;
+            labelBusiness3.Location = new Point(264, 227);
+            labelBusiness3.Name = "labelBusiness3";
+            labelBusiness3.Size = new Size(63, 15);
+            labelBusiness3.TabIndex = 10;
+            labelBusiness3.Text = "Business-3";
             // 
-            // label15
+            // labelBusiness2
             // 
-            label15.AutoSize = true;
-            label15.Location = new Point(16, 227);
-            label15.Name = "label15";
-            label15.Size = new Size(63, 15);
-            label15.TabIndex = 10;
-            label15.Text = "Business-2";
+            labelBusiness2.AutoSize = true;
+            labelBusiness2.Location = new Point(16, 227);
+            labelBusiness2.Name = "labelBusiness2";
+            labelBusiness2.Size = new Size(63, 15);
+            labelBusiness2.TabIndex = 10;
+            labelBusiness2.Text = "Business-2";
             // 
             // panel7
             // 
@@ -610,9 +612,10 @@
             importBusinessBtn3.Name = "importBusinessBtn3";
             importBusinessBtn3.Size = new Size(150, 23);
             importBusinessBtn3.TabIndex = 5;
+            importBusinessBtn3.Tag = "Business-3";
             importBusinessBtn3.Text = "Import Consumer Data";
             importBusinessBtn3.UseVisualStyleBackColor = true;
-            importBusinessBtn3.Validating += validateImport;
+            importBusinessBtn3.Click += importData_Click;
             // 
             // panel6
             // 
@@ -649,9 +652,10 @@
             importBusinessBtn2.Name = "importBusinessBtn2";
             importBusinessBtn2.Size = new Size(150, 23);
             importBusinessBtn2.TabIndex = 5;
+            importBusinessBtn2.Tag = "Business-2";
             importBusinessBtn2.Text = "Import Consumer Data";
             importBusinessBtn2.UseVisualStyleBackColor = true;
-            importBusinessBtn2.Validating += validateImport;
+            importBusinessBtn2.Click += importData_Click;
             // 
             // ImportLabelBusiness2
             // 
@@ -662,14 +666,14 @@
             ImportLabelBusiness2.TabIndex = 17;
             ImportLabelBusiness2.Text = "- Select a File -";
             // 
-            // label3
+            // labelBusiness1
             // 
-            label3.AutoSize = true;
-            label3.Location = new Point(264, 118);
-            label3.Name = "label3";
-            label3.Size = new Size(63, 15);
-            label3.TabIndex = 15;
-            label3.Text = "Business-1";
+            labelBusiness1.AutoSize = true;
+            labelBusiness1.Location = new Point(264, 118);
+            labelBusiness1.Name = "labelBusiness1";
+            labelBusiness1.Size = new Size(63, 15);
+            labelBusiness1.TabIndex = 15;
+            labelBusiness1.Text = "Business-1";
             // 
             // panel5
             // 
@@ -715,18 +719,19 @@
             importBusinessBtn1.Name = "importBusinessBtn1";
             importBusinessBtn1.Size = new Size(150, 23);
             importBusinessBtn1.TabIndex = 5;
+            importBusinessBtn1.Tag = "Business-1";
             importBusinessBtn1.Text = "Import Consumer Data";
             importBusinessBtn1.UseVisualStyleBackColor = true;
-            importBusinessBtn1.Validating += validateImport;
+            importBusinessBtn1.Click += importData_Click;
             // 
-            // label8
+            // labelHousehold2
             // 
-            label8.AutoSize = true;
-            label8.Location = new Point(264, 12);
-            label8.Name = "label8";
-            label8.Size = new Size(70, 15);
-            label8.TabIndex = 13;
-            label8.Text = "Houshold-2";
+            labelHousehold2.AutoSize = true;
+            labelHousehold2.Location = new Point(264, 12);
+            labelHousehold2.Name = "labelHousehold2";
+            labelHousehold2.Size = new Size(70, 15);
+            labelHousehold2.TabIndex = 13;
+            labelHousehold2.Text = "Houshold-2";
             // 
             // panel4
             // 
@@ -772,18 +777,19 @@
             importHouseholdBtn2.Name = "importHouseholdBtn2";
             importHouseholdBtn2.Size = new Size(150, 23);
             importHouseholdBtn2.TabIndex = 5;
+            importHouseholdBtn2.Tag = "Houshold-2";
             importHouseholdBtn2.Text = "Import Consumer Data";
             importHouseholdBtn2.UseVisualStyleBackColor = true;
-            importHouseholdBtn2.Validating += validateImport;
+            importHouseholdBtn2.Click += importData_Click;
             // 
-            // label5
+            // labelHousehold3
             // 
-            label5.AutoSize = true;
-            label5.Location = new Point(16, 118);
-            label5.Name = "label5";
-            label5.Size = new Size(70, 15);
-            label5.TabIndex = 11;
-            label5.Text = "Houshold-3";
+            labelHousehold3.AutoSize = true;
+            labelHousehold3.Location = new Point(16, 118);
+            labelHousehold3.Name = "labelHousehold3";
+            labelHousehold3.Size = new Size(70, 15);
+            labelHousehold3.TabIndex = 11;
+            labelHousehold3.Text = "Houshold-3";
             // 
             // panel3
             // 
@@ -829,18 +835,19 @@
             importHouseholdBtn3.Name = "importHouseholdBtn3";
             importHouseholdBtn3.Size = new Size(150, 23);
             importHouseholdBtn3.TabIndex = 5;
+            importHouseholdBtn3.Tag = "Houshold-3";
             importHouseholdBtn3.Text = "Import Consumer Data";
             importHouseholdBtn3.UseVisualStyleBackColor = true;
-            importHouseholdBtn3.Validating += validateImport;
+            importHouseholdBtn3.Click += importData_Click;
             // 
-            // label2
+            // labelHousehold1
             // 
-            label2.AutoSize = true;
-            label2.Location = new Point(16, 12);
-            label2.Name = "label2";
-            label2.Size = new Size(70, 15);
-            label2.TabIndex = 9;
-            label2.Text = "Houshold-1";
+            labelHousehold1.AutoSize = true;
+            labelHousehold1.Location = new Point(16, 12);
+            labelHousehold1.Name = "labelHousehold1";
+            labelHousehold1.Size = new Size(70, 15);
+            labelHousehold1.TabIndex = 9;
+            labelHousehold1.Text = "Houshold-1";
             // 
             // panel2
             // 
@@ -907,7 +914,7 @@
             importEventDataBtn.Tag = "";
             importEventDataBtn.Text = "Import Event Data";
             importEventDataBtn.UseVisualStyleBackColor = true;
-            importEventDataBtn.Validating += validateImport;
+            importEventDataBtn.Click += importData_Click;
             // 
             // SimulationMain
             // 
@@ -994,18 +1001,18 @@
         private Button importHouseholdBtn1;
         private Panel panel1;
         private Label ConsumeParamLabel;
-        private Label label2;
+        private Label labelHousehold1;
         private Panel panel2;
         private Label label4;
         private TextBox householdAmountTextBox1;
         private Label ImportLabelHousehold1;
-        private Label label8;
+        private Label labelHousehold2;
         private Panel panel4;
         private Label label9;
         private TextBox householdAmountTextBox2;
         private Label ImportLabelHousehold2;
         private Button importHouseholdBtn2;
-        private Label label5;
+        private Label labelHousehold3;
         private Panel panel3;
         private Label label6;
         private TextBox householdAmountTextBox3;
@@ -1015,21 +1022,21 @@
         private Panel panel8;
         private Label label20;
         private TextBox publicAmountTextBox;
-        private Label label21;
+        private Label labelPublic;
         private Button importPublicBtn1;
         private Label ImportLabelBusiness3;
         private Panel panel7;
         private Label label17;
         private TextBox businessAmountTextBox3;
-        private Label label18;
+        private Label labelBusiness3;
         private Button importBusinessBtn3;
         private Label ImportLabelBusiness2;
         private Panel panel6;
         private Label label14;
         private TextBox businessAmountTextBox2;
-        private Label label15;
+        private Label labelBusiness2;
         private Button importBusinessBtn2;
-        private Label label3;
+        private Label labelBusiness1;
         private Panel panel5;
         private Label label11;
         private TextBox businessAmountTextBox1;

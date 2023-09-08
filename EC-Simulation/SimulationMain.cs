@@ -10,87 +10,31 @@ using System.ComponentModel;
 
 namespace EC_Simulation
 {
+
     public partial class SimulationMain : Form
     {
-        private SimulationManager simulationManager = new SimulationManager();
-
-        public TextFieldParser weatherParser;
-        public TextFieldParser consumerDataParser;
-
-        private bool isWeatherDataParsed = false;
-        private bool isConsumerDataParsed = false;
+        //private SimulationManager simulationManager = new SimulationManager();
 
 
         private ErrorProvider errorProvider1;
 
-        private string filePathHoushold1;
-        private string filePathHoushold2;
-        private string filePathHoushold3;
-        private string filePathbusiness1;
-        private string filePathbusiness2;
-        private string filePathbusiness3;
-        private string filePathPublic;
-
-        private Dictionary<Button, Label> buttonLabelPairs;
-        private Dictionary<Button, string> buttonFilePathPairs;
-
-        //private string fileName = string.Empty;
+        private List<ControlGroup> controls = new List<ControlGroup>();
+        private string weatherDataFilePath = string.Empty;
+        private string eventDataFilePath = string.Empty;
 
         public SimulationMain()
         {
             InitializeComponent();
 
             errorProvider1 = new ErrorProvider();
+            controls.Add(new ControlGroup(importHouseholdBtn1, ImportLabelHousehold1, householdAmountTextBox1));
+            controls.Add(new ControlGroup(importHouseholdBtn2, ImportLabelHousehold2, householdAmountTextBox2));
+            controls.Add(new ControlGroup(importHouseholdBtn3, ImportLabelHousehold3, householdAmountTextBox3));
+            controls.Add(new ControlGroup(importBusinessBtn1, ImportLabelBusiness1, businessAmountTextBox1));
+            controls.Add(new ControlGroup(importBusinessBtn2, ImportLabelBusiness2, businessAmountTextBox2));
+            controls.Add(new ControlGroup(importBusinessBtn3, ImportLabelBusiness3, businessAmountTextBox3));
+            controls.Add(new ControlGroup(importPublicBtn1, ImportLabelPublic, publicAmountTextBox));
 
-            buttonLabelPairs = new Dictionary<Button, Label>();
-            buttonLabelPairs.Add(importHouseholdBtn1, ImportLabelHousehold1);
-            buttonLabelPairs.Add(importHouseholdBtn2, ImportLabelHousehold2);
-            buttonLabelPairs.Add(importHouseholdBtn3, ImportLabelHousehold3);
-            buttonLabelPairs.Add(importBusinessBtn1, ImportLabelBusiness1);
-            buttonLabelPairs.Add(importBusinessBtn2, ImportLabelBusiness2);
-            buttonLabelPairs.Add(importBusinessBtn3, ImportLabelBusiness3);
-            buttonLabelPairs.Add(importPublicBtn1, ImportLabelPublic);
-            buttonLabelPairs.Add(importWeatherDataButton, importLabelWD);
-            buttonLabelPairs.Add(importEventDataBtn, importLabelED);
-
-            buttonFilePathPairs = new Dictionary<Button, string>();
-            buttonFilePathPairs.Add(importHouseholdBtn1, string.Empty);
-            buttonFilePathPairs.Add(importHouseholdBtn2, string.Empty);
-            buttonFilePathPairs.Add(importHouseholdBtn3, string.Empty);
-            buttonFilePathPairs.Add(importBusinessBtn1, string.Empty);
-            buttonFilePathPairs.Add(importBusinessBtn2, string.Empty);
-            buttonFilePathPairs.Add(importBusinessBtn3, string.Empty);
-            buttonFilePathPairs.Add(importPublicBtn1, string.Empty);
-            buttonFilePathPairs.Add(importWeatherDataButton, string.Empty);
-            buttonFilePathPairs.Add(importEventDataBtn, string.Empty);
-
-
-        }
-
-        private void importWeatherDataButton_Click(object sender, EventArgs e) // Before deleting, clear "click" prop in designer.
-        {
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
-            {
-                openFileDialog.InitialDirectory = "c:\\";
-                openFileDialog.Filter = "CSV file (*.csv)|*.csv";
-                openFileDialog.FilterIndex = 1;
-                openFileDialog.RestoreDirectory = true;
-
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    // control csv structure? headers?
-                    importLabelWD.Text = openFileDialog.SafeFileName;
-
-                    TextFieldParser parser = new TextFieldParser(openFileDialog.FileName);
-                    parser.TextFieldType = FieldType.Delimited;
-                    parser.SetDelimiters(";");
-                    weatherParser = parser;
-                    //simulationManager.FillCalendar(parser);
-                    isWeatherDataParsed = true;
-
-
-                }
-            }
         }
         private void importData_Click(object sender, EventArgs e)
         {
@@ -104,26 +48,31 @@ namespace EC_Simulation
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    foreach (KeyValuePair<Button, Label> pair in buttonLabelPairs)
+                    if (button == importWeatherDataButton)
                     {
-                        if (pair.Key == button)
+                        importLabelWD.Text = openFileDialog.SafeFileName;
+                        weatherDataFilePath = openFileDialog.FileName;
+                        return;
+                    }
+                    if (button == importEventDataBtn)
+                    {
+                        importLabelED.Text = openFileDialog.SafeFileName;
+                        eventDataFilePath = openFileDialog.FileName;
+                        return;
+                    }
+                    foreach (ControlGroup group in controls)
+                    {
+                        if (group.ImportButton == button)
                         {
-                            pair.Value.Text = openFileDialog.SafeFileName;
-                            buttonFilePathPairs[pair.Key] = openFileDialog.FileName;
+                            group.ImportLabel.Text = openFileDialog.SafeFileName;
+                            group.FilePath = openFileDialog.FileName;
                         }
                     }
-                    // control csv structure? headers?
-                    //ImportLabelHousehold1.Text = openFileDialog.SafeFileName;
 
-                    /*TextFieldParser parser = new TextFieldParser(openFileDialog.FileName);
-                    parser.TextFieldType = FieldType.Delimited;
-                    parser.SetDelimiters(";");
-                    consumerDataParser = parser;
-                    isConsumerDataParsed = true;*/
-                    
                 }
             }
         }
+
 
         private void validateTextBox_float(object sender, CancelEventArgs e)
         {
@@ -156,15 +105,29 @@ namespace EC_Simulation
         }
         private void validateImport(object sender, CancelEventArgs e)
         {
-            foreach (KeyValuePair<Button, string> pair in buttonFilePathPairs)
+            foreach (ControlGroup group in controls)
             {
-                if (pair.Value == string.Empty)
+                if (group.FilePath == string.Empty)
                 {
-                    errorProvider1.SetError(pair.Key, "Please select a file.");
+                    errorProvider1.SetError(group.ImportButton, "Please select a file.");
                     e.Cancel = true;
                     return;
                 }
+
             }
+            if (eventDataFilePath == string.Empty)
+            {
+                errorProvider1.SetError(importEventDataBtn, "Please select a file.");
+                e.Cancel = true;
+                return;
+            }
+            if (weatherDataFilePath == string.Empty)
+            {
+                errorProvider1.SetError(importWeatherDataButton, "Please select a file.");
+                e.Cancel = true;
+                return;
+            }
+
         }
 
         private void startSimulationButton_Click(object sender, EventArgs e)
@@ -177,14 +140,15 @@ namespace EC_Simulation
                     MessageBox.Show("Fill all fields correctly");
                     return;
                 }*/
-                simulationManager.FillCalendar(buttonFilePathPairs[importWeatherDataButton]);
-                simulationManager.FillConsumer(buttonFilePathPairs[importHouseholdBtn1]);
+                SolarPanelSpecs solarSpecs = new SolarPanelSpecs(int.Parse(solarPanelParamSpecTextBox5.Text), float.Parse(solarPanelParamSpecTextBox1.Text), float.Parse(solarPanelParamSpecTextBox2.Text), float.Parse(solarPanelParamSpecTextBox3.Text), float.Parse(solarPanelParamSpecTextBox4.Text));
+                WindTurbineSpecs windSpecs = new WindTurbineSpecs(int.Parse(windTurbineParamSpecTextBox4.Text), float.Parse(windTurbineParamSpecTextBox1.Text), float.Parse(windTurbineParamSpecTextBox2.Text), float.Parse(windTurbineParamSpecTextBox3.Text));
+                HydroTurbineSpecs hydroSpecs = new HydroTurbineSpecs(int.Parse(hydroPlantParamSpecTextBox3.Text), float.Parse(hydroPlantParamSpecTextBox1.Text), float.Parse(hydroPlantParamSpecTextBox2.Text));
 
-                simulationManager.InitilazieSolarPanels(int.Parse(solarPanelParamSpecTextBox5.Text), float.Parse(solarPanelParamSpecTextBox1.Text), float.Parse(solarPanelParamSpecTextBox2.Text), float.Parse(solarPanelParamSpecTextBox3.Text), float.Parse(solarPanelParamSpecTextBox4.Text));
-                simulationManager.InitilazieWindTurbines(int.Parse(windTurbineParamSpecTextBox4.Text), float.Parse(windTurbineParamSpecTextBox1.Text), float.Parse(windTurbineParamSpecTextBox2.Text), float.Parse(windTurbineParamSpecTextBox3.Text));
-                simulationManager.InitilazieHydroPowerPlanets(int.Parse(hydroPlantParamSpecTextBox3.Text), float.Parse(hydroPlantParamSpecTextBox1.Text), float.Parse(hydroPlantParamSpecTextBox2.Text));
+                //simulationManager.InitilazieSolarPanels(int.Parse(solarPanelParamSpecTextBox5.Text), float.Parse(solarPanelParamSpecTextBox1.Text), float.Parse(solarPanelParamSpecTextBox2.Text), float.Parse(solarPanelParamSpecTextBox3.Text), float.Parse(solarPanelParamSpecTextBox4.Text));
+                //simulationManager.InitilazieWindTurbines(int.Parse(windTurbineParamSpecTextBox4.Text), float.Parse(windTurbineParamSpecTextBox1.Text), float.Parse(windTurbineParamSpecTextBox2.Text), float.Parse(windTurbineParamSpecTextBox3.Text));
+                //simulationManager.InitilazieHydroPowerPlanets(int.Parse(hydroPlantParamSpecTextBox3.Text), float.Parse(hydroPlantParamSpecTextBox1.Text), float.Parse(hydroPlantParamSpecTextBox2.Text));
                 MessageBox.Show("ready");
-                Simulator sim = new Simulator(simulationManager);
+                Simulator sim = new Simulator(controls, solarSpecs,windSpecs,hydroSpecs, weatherDataFilePath, eventDataFilePath);
                 sim.Show();
             }
             else
@@ -199,6 +163,67 @@ namespace EC_Simulation
             e.Cancel = false;
             base.OnFormClosing(e);
         }
+
+    }
+    public class ControlGroup
+    {
+        public Button ImportButton;
+        public Label ImportLabel;
+        public TextBox Amount;
+        public string FilePath = string.Empty;
+
+        public ControlGroup(Button importButton, Label importLabel, TextBox amount)
+        {
+            ImportButton = importButton;
+            ImportLabel = importLabel;
+            Amount = amount;
+
+        }
+    }
+    public struct SolarPanelSpecs
+    {
+        public SolarPanelSpecs(int amount, float efficiency, float area, float noct, float tmpCoeff)
+        {
+            Amount = amount;
+            Efficiency = efficiency;
+            Area = area;
+            Noct = noct;
+            TempCoefficient = tmpCoeff;
+        }
+        public int Amount;
+        public float Efficiency;
+        public float Area;
+        public float Noct;
+        public float TempCoefficient;
+  
+    }
+    public struct WindTurbineSpecs
+    {
+        public WindTurbineSpecs(int amount, float bladeArea, float powerCoefficent, float availablity)
+        {
+            Amount = amount;
+            BladeArea = bladeArea;
+            PowerCoefficent = powerCoefficent;
+            Availablity = availablity;
+        }
+        public int Amount;
+        public float BladeArea;
+        public float PowerCoefficent;
+        public float Availablity;
+
+    }
+    public struct HydroTurbineSpecs
+    {
+        public HydroTurbineSpecs(int amount, float height, float efficiency)
+        {
+            Amount = amount;
+            Height = height;
+            Efficiency = efficiency;
+
+        }
+        public int Amount;
+        public float Height;
+        public float Efficiency;
 
     }
 }

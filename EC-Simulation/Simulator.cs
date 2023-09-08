@@ -16,21 +16,31 @@ namespace EC_Simulation
     {
         private SimulationManager simulationManager;
 
-        public Simulator(SimulationManager simulationManager)
+        private List<ControlGroup> controls;
+        private SolarPanelSpecs solarSpecs;
+        private WindTurbineSpecs windSpecs;
+        private HydroTurbineSpecs hydroSpecs;
+
+        public Simulator(List<ControlGroup> controls, SolarPanelSpecs solarSpecs, WindTurbineSpecs windSpecs, HydroTurbineSpecs hydroSpecs, string weatherDataFilePath, string eventDataFilePath)
         {
             InitializeComponent();
+            this.controls = controls;
+            this.solarSpecs = solarSpecs;
+            this.windSpecs = windSpecs;
+            this.hydroSpecs = hydroSpecs;
 
-        }
+            simulationManager = new SimulationManager(simProgresLabel, simulationProgressBar, loggerTextBox, controls, weatherDataFilePath, eventDataFilePath);
 
-        public void StartSimulation()
-        {
-            loggerTextBox.AppendText("Starting simulation...");
-            
         }
 
         private void Simulator_Shown(object sender, EventArgs e)
         {
-            simulationManager.Simulate(loggerTextBox, simProgresLabel, simulationProgressBar);
+            simulationManager.InitilazieSolarPanels(solarSpecs.Amount, solarSpecs.Efficiency, solarSpecs.Area, solarSpecs.Noct, solarSpecs.TempCoefficient);
+            simulationManager.InitilazieWindTurbines(windSpecs.Amount, windSpecs.BladeArea, windSpecs.PowerCoefficent, windSpecs.Availablity);
+            simulationManager.InitilazieHydroPowerPlanets(hydroSpecs.Amount, hydroSpecs.Height, hydroSpecs.Efficiency);
+            simulationManager.Simulate();
         }
+
+
     }
 }

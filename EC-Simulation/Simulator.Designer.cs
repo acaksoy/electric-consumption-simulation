@@ -36,17 +36,17 @@
             // loggerTextBox
             // 
             loggerTextBox.BackColor = SystemColors.Window;
-            loggerTextBox.Location = new Point(170, 91);
+            loggerTextBox.Location = new Point(129, 81);
             loggerTextBox.Multiline = true;
             loggerTextBox.Name = "loggerTextBox";
             loggerTextBox.ReadOnly = true;
             loggerTextBox.ScrollBars = ScrollBars.Vertical;
-            loggerTextBox.Size = new Size(460, 303);
+            loggerTextBox.Size = new Size(890, 459);
             loggerTextBox.TabIndex = 0;
             // 
             // simulationProgressBar
             // 
-            simulationProgressBar.Location = new Point(170, 41);
+            simulationProgressBar.Location = new Point(340, 36);
             simulationProgressBar.Name = "simulationProgressBar";
             simulationProgressBar.Size = new Size(460, 23);
             simulationProgressBar.TabIndex = 1;
@@ -54,7 +54,7 @@
             // simProgresLabel
             // 
             simProgresLabel.AutoSize = true;
-            simProgresLabel.Location = new Point(363, 23);
+            simProgresLabel.Location = new Point(533, 18);
             simProgresLabel.Name = "simProgresLabel";
             simProgresLabel.Size = new Size(76, 15);
             simProgresLabel.TabIndex = 2;
@@ -64,7 +64,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(1107, 613);
             Controls.Add(simProgresLabel);
             Controls.Add(simulationProgressBar);
             Controls.Add(loggerTextBox);

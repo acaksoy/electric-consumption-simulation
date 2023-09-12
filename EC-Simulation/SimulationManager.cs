@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -16,11 +17,18 @@ namespace EC_Simulation
     public class SimulationManager
     {
         private List<Hour> hours { get; set; }
+        private List<Event> events { get; set; }
+
         private List<SolarPanel> solarPanels { get; set; }
         private List<WindTurbine> windTurbines { get; set; }
         private List<HydroPowerPlant> hydroPowerPlants { get; set; }
 
         private List<ElectricityConsumer> allconsumers { get; set; }
+
+        //private List<Record> records = new List<Record>();
+        private List<Record> productionRecords = new List<Record>();
+        private List<Record> consumptionRecords = new List<Record>();
+
 
         BackgroundWorker mainBackgroundWorker;
         BackgroundWorker consumerInitializerBackgroundWorker;
@@ -33,6 +41,14 @@ namespace EC_Simulation
 
         private string weatherDataFilePath;
         private string eventDataFilePath;
+
+        double totalConsump = 0;
+        double totalProduction = 0;
+        double solarTotalProduction = 0;
+        double windTotalProduction = 0;
+        double hydroTotalProduction = 0;
+        double fosilTotalProduction = 0;
+
         public SimulationManager(Label simLabel, ProgressBar simPBar, TextBox simTB, List<ControlGroup> controls, string weatherDataFilePath, string eventDataFilePath) //initilaze icin bilgiler önden yüklenmeli
         {
             simProgresLabel = simLabel;
@@ -43,10 +59,13 @@ namespace EC_Simulation
             this.eventDataFilePath = eventDataFilePath;
             
             hours = new List<Hour>();
+            events = new List<Event>();
             solarPanels = new List<SolarPanel>();
             windTurbines = new List<WindTurbine>();
             hydroPowerPlants = new List<HydroPowerPlant>();
             allconsumers = new List<ElectricityConsumer>();
+
+            productionRecords.Add(new Record("Fosil resources"));
 
             mainBackgroundWorker = new BackgroundWorker();
             mainBackgroundWorker.DoWork += mainBackgroundWorker_DoWork;
@@ -78,70 +97,162 @@ namespace EC_Simulation
             int progress = 0;
             int perc = 0;
 
-            string message = "";
+            //Event activeEvent = null;
             foreach (Hour hour in hours)
             {
-                float solarElecGenTotal = 0;
-                float windElecGenTotal = 0;
-                float hydroElecGenTotal = 0;
-                float totalPower = 0;
-                float fossilProduction = 0;
 
-                float totalConsumption = 0;
-                message += $"Date: {hour.Date.ToString()} - Temp: {hour.Temperature.ToString()} - Wind: {hour.WindSpeed.ToString()} - Irradiance: {hour.SolarIrradiance.ToString()}" + "\n";
+                // event listesinde bu saat var mi kontrol et
+                // varsa, tipini kontrol et, weather is burda weather degistri
+                double solarElecGenTotal = 0;
+                double windElecGenTotal = 0;
+                double hydroElecGenTotal = 0;
+                double totalPower = 0;
+                double fossilProduction = 0;
+                
+                double totalConsumption = 0;
+
+                bool fosilProductionActive = true;
+                
+                //o eventi her production ve consume icin yolla. o fonksiyonlarda tip uygunmu kontrol edilsin
+                //tip uygunsa ekleme veya carpan olarak ekle
+                // yoksa etkisiz olsun devem etsin
                 foreach (SolarPanel panel in solarPanels)
                 {
                     solarElecGenTotal += panel.ProduceElectricity(hour);
                 }
-                message += "Solar panels: " + solarElecGenTotal.ToString() + "\n";
+                productionRecords.Find(x => x.Name == "Solar panels").RecordResult(hour.Date, solarElecGenTotal);
+
+                solarTotalProduction += solarElecGenTotal;//test
+                
                 foreach (WindTurbine wind in windTurbines)
                 {
                     windElecGenTotal += wind.ProduceElectricity(hour);
                 }
-                message += "Wind turbine: " + solarElecGenTotal.ToString() + "\n";
+                productionRecords.Find(x => x.Name == "Wind turbines").RecordResult(hour.Date, windElecGenTotal);
+                windTotalProduction += windElecGenTotal;//test
                 foreach (HydroPowerPlant hydro in hydroPowerPlants)
                 {
                     hydroElecGenTotal += hydro.ProduceElectricity(hour);
                 }
-                message += "Hydro power plant: " + solarElecGenTotal.ToString() + "\n";
+                productionRecords.Find(x => x.Name == "Hydropower plants").RecordResult(hour.Date, hydroElecGenTotal);
+                hydroTotalProduction += hydroElecGenTotal;//test
 
                 totalPower = solarElecGenTotal + windElecGenTotal + hydroElecGenTotal;
-                message += "total: " + totalPower.ToString() + "\n";
+                totalProduction += totalPower;//test
+
 
                 foreach (ElectricityConsumer consumer in allconsumers)
                 {
                     float consumption = consumer.ConsumeElectricity(hour);
+                    //totalConsumption += consumption;
+                    //totalConsump += consumption;
+                    if (totalConsumption + consumption >= totalPower)
+                    {
+                        if (!fosilProductionActive) consumption = 0;
+
+                        fossilProduction += consumption;                                             
+                        fosilTotalProduction += fossilProduction;//test
+    
+                    }
                     totalConsumption += consumption;
-                    message += consumer.name +  "-- total electricity used: " + consumption.ToString();
+                    totalConsump += consumption;
+                    consumptionRecords.Find(x => x.Name == consumer.name).RecordResult(hour.Date, consumption);
                 }
-                if (totalConsumption > totalPower)
-                {
-                    fossilProduction = totalConsumption - totalPower;
-                }
+                productionRecords.Find(x => x.Name == "Fosil resources").RecordResult(hour.Date, fossilProduction);
+
                 progress++;
                 perc = (int)(100 * progress / hours.Count);
-                mainBackgroundWorker.ReportProgress(perc, message);
+                if(perc % 10 == 0) {
+                    mainBackgroundWorker.ReportProgress(perc);
+                }
+                               
+                
             }
         }
         private void mainBackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             simProgresBar.Value = e.ProgressPercentage;
-            simProgresLabel.Text = "Simulating... %" + e.ProgressPercentage.ToString();
             if (e.UserState != null)
             {
-                simTextBox.AppendText($"{(string)e.UserState}" + Environment.NewLine);
+                List<string> messages = e.UserState as List<string>;               
+                simProgresLabel.Text = "Simulating... %" + e.ProgressPercentage.ToString();
+                for(int i=0; i< messages.Count; i++)
+                {
+                    simTextBox.AppendText(messages[i] + Environment.NewLine);
+                }
+                
             }
         }
         private void mainBackgroundWorker_RunWorkCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+            simProgresBar.Value = 100;
+            simProgresLabel.Text = "Complete";
+            Debug.WriteLine("--------------------------");
+            Debug.WriteLine($"Single solar production: {solarPanels[0].ProduceElectricity(hours[612])}");
+            Debug.WriteLine($"Single wind production: {windTurbines[0].ProduceElectricity(hours[612])}");
+            Debug.WriteLine($"Single hydro production: {hydroPowerPlants[0].ProduceElectricity(hours[612])}");
+
+            Debug.WriteLine($"Total consumption: {totalConsump}");
+            Debug.WriteLine($"Total production: {totalProduction}");
+            Debug.WriteLine($"Total solar production: {solarTotalProduction}");
+            Debug.WriteLine($"Total wind production: {windTotalProduction}");
+            Debug.WriteLine($"Total hydro production: {hydroTotalProduction}");
+            Debug.WriteLine($"Total fosil production: {fosilTotalProduction}");
+            Debug.WriteLine("--------------------------");
+
             MessageBox.Show("Simulation complete...");
+            DisplayResult displayResult = new DisplayResult(productionRecords, consumptionRecords);
+            displayResult.Show();
         }
 
         private void calendarInitializerBackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             int progress = 0;
             int counter = 0;
-            int lineCount = File.ReadLines(weatherDataFilePath).Count();
+            int lineCount = File.ReadLines(eventDataFilePath).Count();
+            calendarInitializerBackgroundWorker.ReportProgress(progress, "Starting to initialize events.");
+
+            TextFieldParser parserEvent = new TextFieldParser(eventDataFilePath);
+            parserEvent.TextFieldType = FieldType.Delimited;
+            parserEvent.SetDelimiters(";");
+
+            parserEvent.ReadLine(); // passing first row
+            string[] rowEvent = { };
+            while (!parserEvent.EndOfData)
+            {
+                counter++;
+                progress = (int)100 * counter / lineCount;
+
+                rowEvent = parserEvent.ReadFields();
+                for (int i = 0; i < rowEvent.Length; i++) //checks if columns has empty data
+                {
+                    if (rowEvent[i] == "")
+                    {
+                        rowEvent[i] = "0";
+                    }
+                }
+                string name = rowEvent[0];
+                string description = rowEvent[1];
+                DateOnly startDate = DateOnly.ParseExact(rowEvent[2], "dd.MM.yyyy", CultureInfo.CurrentCulture);
+                DateOnly endDate = DateOnly.ParseExact(rowEvent[3], "dd.MM.yyyy", CultureInfo.CurrentCulture);
+                TimeOnly startHour = TimeOnly.ParseExact(rowEvent[4], "HH:mm", CultureInfo.CurrentCulture);
+                TimeOnly endHour = TimeOnly.ParseExact(rowEvent[5], "HH:mm", CultureInfo.CurrentCulture);
+                string effectedClass = rowEvent[6];
+                string effectedUnitTag = rowEvent[7];
+                float effectValue = float.Parse(rowEvent[8], CultureInfo.InvariantCulture);
+
+                events.Add(new Event(startDate, endDate, startHour, endHour, name, description, effectedClass ,effectedUnitTag ,effectValue));
+
+                if (progress % 25 == 0)
+                {
+                    calendarInitializerBackgroundWorker.ReportProgress(progress);
+                }
+            }
+            parserEvent.Close();
+
+            progress = 0;
+            counter = 0;
+            lineCount = File.ReadLines(weatherDataFilePath).Count();
             calendarInitializerBackgroundWorker.ReportProgress(progress, "Starting to initialize calendar.");
 
             TextFieldParser parser = new TextFieldParser(weatherDataFilePath);
@@ -165,9 +276,9 @@ namespace EC_Simulation
                 }
                 DateTime date = DateTime.ParseExact(row[0], "g", CultureInfo.CurrentCulture); // g = dd.mm.yyyy hh:mm
                 hours.Add(new Hour(date, float.Parse(row[1], CultureInfo.InvariantCulture), float.Parse(row[2], CultureInfo.InvariantCulture), float.Parse(row[3], CultureInfo.InvariantCulture), float.Parse(row[4], CultureInfo.InvariantCulture), float.Parse(row[5], CultureInfo.InvariantCulture)));
-                if (progress % 10 == 0)
+                if (progress % 25 == 0)
                 {
-                    calendarInitializerBackgroundWorker.ReportProgress(progress, date.ToString());
+                    calendarInitializerBackgroundWorker.ReportProgress(progress);
                 }
             }
             parser.Close();           
@@ -247,11 +358,12 @@ namespace EC_Simulation
                     columns += columnNames[i] + ",";
                 }
                 consumerInitializerBackgroundWorker.ReportProgress(progress, "Column Names: " + columns);
-                consumerInitializerBackgroundWorker.ReportProgress(progress, name + "-Sample: " + "date: " + schedule[300].Date.ToString()
+                /*consumerInitializerBackgroundWorker.ReportProgress(progress, name + "-Sample: " + "date: " + schedule[300].Date.ToString()
                                                                                                     + "Values: " + schedule[300].ConsumeValues[2].Name
-                                                                                                    + ", " + schedule[300].ConsumeValues[2].Value);
+                                                                                                    + ", " + schedule[300].ConsumeValues[2].Value);*/
 
                 allconsumers.Add(new ElectricityConsumer(name, int.Parse(group.Amount.Text), schedule));
+                consumptionRecords.Add(new Record(name));
                 consumerInitializerBackgroundWorker.ReportProgress(progress, "Initializing " + name + "complete.");
                 parser.Close();
             }
@@ -276,6 +388,7 @@ namespace EC_Simulation
             {
                 solarPanels.Add(new SolarPanel(efficiency, area, noct, tempCoefficient));
             }
+            productionRecords.Add(new Record("Solar panels"));
         }
         public void InitilazieWindTurbines(int amount, float bladeArea, float powerCoefficent, float availablity)
         {
@@ -283,6 +396,7 @@ namespace EC_Simulation
             {
                 windTurbines.Add(new WindTurbine(bladeArea, powerCoefficent, availablity));
             }
+            productionRecords.Add(new Record("Wind turbines"));
         }
         public void InitilazieHydroPowerPlanets(int amount, float height, float efficiency)
         {
@@ -290,6 +404,7 @@ namespace EC_Simulation
             {
                 hydroPowerPlants.Add(new HydroPowerPlant(height, efficiency));
             }
+            productionRecords.Add(new Record("Hydropower plants"));
         }
         /*public void FillCalendar(string filePath) // control data
         {

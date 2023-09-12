@@ -29,6 +29,7 @@ namespace SimulationClassLibrary
 
             airDenstiy = hour.AirPressure*100 / (gasConstatn * (hour.Temperature + kelvin)); //100 -> hPa to Pa. air density in kg/m3
             float power = 0.5f * airDenstiy * bladeArea * powerCoefficent * availablity * (float)Math.Pow(hour.WindSpeed, 3);
+            power = power / 1000;
             return power;
         }
     }

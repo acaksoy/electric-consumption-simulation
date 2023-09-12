@@ -22,6 +22,7 @@ namespace SimulationClassLibrary
         public override float ProduceElectricity(Hour hour)
         {
             float power = WaterDensity * GravitationalForce * hour.Discharge * height * efficiency;
+            power = power / 1000; //kW
             return power;
 
         }

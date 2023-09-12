@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -49,6 +50,24 @@ namespace SimulationClassLibrary
                     foreach (ConsumeValue consumption in hourlyCon.ConsumeValues)
                     {
                         totalConsumption += consumption.Value;
+                    }
+                }
+            }
+            return totalConsumption * numberOfHousholds;
+        }
+        public float ConsumeElectricity(Hour hour, Event ev) 
+        {
+            float totalConsumption = 0;
+            float evValMultiplier = 1;
+            foreach (HourlyConsumption hourlyCon in schedule)
+            {
+                if (DateTime.Compare(hour.Date, hourlyCon.Date) == 0) //all consume values are under single date
+                {
+                    foreach (ConsumeValue consumption in hourlyCon.ConsumeValues)
+                    {
+                        if (consumption.Name == ev.EffectedUnitTag) evValMultiplier = ev.EffectValue;
+
+                        totalConsumption += consumption.Value * evValMultiplier;
                     }
                 }
             }

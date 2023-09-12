@@ -45,7 +45,7 @@ namespace EC_Simulation
                 openFileDialog.Filter = "CSV file (*.csv)|*.csv";
                 openFileDialog.FilterIndex = 1;
                 openFileDialog.RestoreDirectory = true;
-
+                
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     if (button == importWeatherDataButton)

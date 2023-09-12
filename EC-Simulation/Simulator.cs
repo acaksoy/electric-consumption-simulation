@@ -39,6 +39,7 @@ namespace EC_Simulation
             simulationManager.InitilazieWindTurbines(windSpecs.Amount, windSpecs.BladeArea, windSpecs.PowerCoefficent, windSpecs.Availablity);
             simulationManager.InitilazieHydroPowerPlanets(hydroSpecs.Amount, hydroSpecs.Height, hydroSpecs.Efficiency);
             simulationManager.Simulate();
+            Debug.WriteLine("Simulator stoped.");
         }
 
 

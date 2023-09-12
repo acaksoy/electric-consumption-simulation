@@ -30,7 +30,8 @@ namespace SimulationClassLibrary
         {
             operatingTemp = hour.Temperature + (noct - ambientTemp) * hour.SolarIrradiance / eNoct;
             float power = area * efficiency * (1 + tempCoefficient * (operatingTemp - refTemp)) * hour.SolarIrradiance;
-            return power;
+            power = power / 1000; //convert to kW
+            return power; 
         }
     }
 }

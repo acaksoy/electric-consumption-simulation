@@ -17,7 +17,7 @@ namespace SimulationClassLibrary
         public string Name { get; set; }
         public string Description { get; set; }
         public string EffectedClass { get; set; }
-        public string EffectedUnitTag { get; set; }
+        public string EffectedUnitName { get; set; }
         public float EffectValue { get; set; }
         public Event(DateOnly startDate, DateOnly endDate, TimeOnly startHour, TimeOnly endHour, string name, string description, string effectedClass, string effectedUnitTag, float effectValue)
         {
@@ -28,7 +28,7 @@ namespace SimulationClassLibrary
             this.Name = name;
             this.Description = description;
             this.EffectedClass = effectedClass; 
-            this.EffectedUnitTag = effectedUnitTag;
+            this.EffectedUnitName = effectedUnitTag;
             this.EffectValue = effectValue;
         }
     }

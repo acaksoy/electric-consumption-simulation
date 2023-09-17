@@ -33,7 +33,10 @@ namespace SimulationClassLibrary
         public string name;
         private int numberOfHousholds;
         private List<HourlyConsumption> schedule;
-
+        Random random = new Random();
+        float minValue = 0.95f;
+        float maxValue = 1.05f;
+        
         public ElectricityConsumer(string name, int numberOfHousholds, List<HourlyConsumption> schedules)
         {
             this.name = name;
@@ -49,7 +52,8 @@ namespace SimulationClassLibrary
                 {
                     foreach (ConsumeValue consumption in hourlyCon.ConsumeValues)
                     {
-                        totalConsumption += consumption.Value;
+                        float randomConsumptionValueMultiplier = (float)random.NextDouble() * (maxValue - minValue) + minValue;
+                        totalConsumption += consumption.Value * randomConsumptionValueMultiplier;
                     }
                 }
             }
@@ -65,7 +69,7 @@ namespace SimulationClassLibrary
                 {
                     foreach (ConsumeValue consumption in hourlyCon.ConsumeValues)
                     {
-                        if (consumption.Name == ev.EffectedUnitTag) evValMultiplier = ev.EffectValue;
+                        if (consumption.Name == ev.EffectedUnitName) evValMultiplier = ev.EffectValue;
 
                         totalConsumption += consumption.Value * evValMultiplier;
                     }

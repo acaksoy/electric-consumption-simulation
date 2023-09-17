@@ -9,7 +9,7 @@ namespace SimulationClassLibrary
     public class HydroPowerPlant : ElectricityProducer
     {
         private static float GravitationalForce = 9.8f;
-        private static float WaterDensity = 997;
+        private static float WaterDensity = 1000;
 
         private float height;
         private float efficiency;
@@ -21,7 +21,7 @@ namespace SimulationClassLibrary
 
         public override float ProduceElectricity(Hour hour)
         {
-            float power = WaterDensity * GravitationalForce * hour.Discharge * height * efficiency;
+            float power = WaterDensity * GravitationalForce * hour.Discharge * height * efficiency * randomProductionValueMultiplier;
             power = power / 1000; //kW
             return power;
 

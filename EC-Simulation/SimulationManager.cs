@@ -25,9 +25,9 @@ namespace EC_Simulation
 
         private List<ElectricityConsumer> allconsumers { get; set; }
 
-        //private List<Record> records = new List<Record>();
-        private List<Record> productionRecords = new List<Record>();
-        private List<Record> consumptionRecords = new List<Record>();
+        //private List<Record> productionRecords = new List<Record>();
+        //private List<Record> consumptionRecords = new List<Record>();
+        private List<Record> records = new List<Record>();
 
 
         BackgroundWorker mainBackgroundWorker;
@@ -42,7 +42,7 @@ namespace EC_Simulation
         private string weatherDataFilePath;
         private string eventDataFilePath;
 
-        double totalConsump = 0;
+        double yearTotalConsump = 0;
         double totalProduction = 0;
         double solarTotalProduction = 0;
         double windTotalProduction = 0;
@@ -65,7 +65,14 @@ namespace EC_Simulation
             hydroPowerPlants = new List<HydroPowerPlant>();
             allconsumers = new List<ElectricityConsumer>();
 
-            productionRecords.Add(new Record("Fosil resources"));
+            /*productionRecords.Add(new Record("Fosil resources"));
+            productionRecords.Add(new Record("Total Production"));
+            consumptionRecords.Add(new Record("Total Consumption"));*/
+
+
+            records.Add(new Record("Fosil resources"));
+            records.Add(new Record("Total Production"));
+            records.Add(new Record("Total Consumption"));
 
             mainBackgroundWorker = new BackgroundWorker();
             mainBackgroundWorker.DoWork += mainBackgroundWorker_DoWork;
@@ -100,9 +107,40 @@ namespace EC_Simulation
             //Event activeEvent = null;
             foreach (Hour hour in hours)
             {
+                List<Event> activeEvents = new List<Event>();
+                DateOnly date = DateOnly.FromDateTime(hour.Date);
+                TimeOnly time = TimeOnly.FromDateTime(hour.Date);
+                foreach (Event ev in events)
+                {
+                    if ((ev.StartDate <= date && ev.EndDate >= date) && (ev.StartHour <= time && ev.EndHour >= time))
+                    {
+                        activeEvents.Add(ev);
+                        if (ev.EffectedClass == "Weather")
+                        {
+                            switch (ev.EffectedUnitName)
+                            {
+                                case "Temperature":
+                                    hour.Temperature = ev.EffectValue;
+                                    break;
+                                case "SolarIrradiance":
+                                    hour.SolarIrradiance = ev.EffectValue;
+                                    break;
+                                case "WindSpeed":
+                                    hour.WindSpeed = ev.EffectValue;
+                                    break;
+                                case "Discharge":
+                                    hour.Discharge = ev.EffectValue;
+                                    break;
+                                case "AirPressure":
+                                    hour.AirPressure = ev.EffectValue;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
 
-                // event listesinde bu saat var mi kontrol et
-                // varsa, tipini kontrol et, weather is burda weather degistri
+                    }
+                }
                 double solarElecGenTotal = 0;
                 double windElecGenTotal = 0;
                 double hydroElecGenTotal = 0;
@@ -112,15 +150,20 @@ namespace EC_Simulation
                 double totalConsumption = 0;
 
                 bool fosilProductionActive = true;
+                foreach(Event ev in activeEvents)
+                {
+                    if(ev.EffectedClass == "Fosil" && ev.EffectValue == 0)
+                    {
+                        fosilProductionActive = false;
+                    }
+                }
                 
-                //o eventi her production ve consume icin yolla. o fonksiyonlarda tip uygunmu kontrol edilsin
-                //tip uygunsa ekleme veya carpan olarak ekle
-                // yoksa etkisiz olsun devem etsin
                 foreach (SolarPanel panel in solarPanels)
                 {
                     solarElecGenTotal += panel.ProduceElectricity(hour);
                 }
-                productionRecords.Find(x => x.Name == "Solar panels").RecordResult(hour.Date, solarElecGenTotal);
+
+                records.Find(x => x.Name == "Solar panels").RecordResult(hour.Date, solarElecGenTotal);
 
                 solarTotalProduction += solarElecGenTotal;//test
                 
@@ -128,22 +171,30 @@ namespace EC_Simulation
                 {
                     windElecGenTotal += wind.ProduceElectricity(hour);
                 }
-                productionRecords.Find(x => x.Name == "Wind turbines").RecordResult(hour.Date, windElecGenTotal);
+                records.Find(x => x.Name == "Wind turbines").RecordResult(hour.Date, windElecGenTotal);
                 windTotalProduction += windElecGenTotal;//test
                 foreach (HydroPowerPlant hydro in hydroPowerPlants)
                 {
                     hydroElecGenTotal += hydro.ProduceElectricity(hour);
                 }
-                productionRecords.Find(x => x.Name == "Hydropower plants").RecordResult(hour.Date, hydroElecGenTotal);
+                records.Find(x => x.Name == "Hydropower plants").RecordResult(hour.Date, hydroElecGenTotal);
                 hydroTotalProduction += hydroElecGenTotal;//test
 
                 totalPower = solarElecGenTotal + windElecGenTotal + hydroElecGenTotal;
+                records.Find(x => x.Name == "Total Production").RecordResult(hour.Date, totalPower);
                 totalProduction += totalPower;//test
 
 
                 foreach (ElectricityConsumer consumer in allconsumers)
                 {
                     float consumption = consumer.ConsumeElectricity(hour);
+                    foreach(Event ev in activeEvents)
+                    {
+                        if(ev.EffectedUnitName == consumer.name)
+                        {
+                            consumption *= ev.EffectValue;
+                        }
+                    }
                     //totalConsumption += consumption;
                     //totalConsump += consumption;
                     if (totalConsumption + consumption >= totalPower)
@@ -155,10 +206,11 @@ namespace EC_Simulation
     
                     }
                     totalConsumption += consumption;
-                    totalConsump += consumption;
-                    consumptionRecords.Find(x => x.Name == consumer.name).RecordResult(hour.Date, consumption);
+                    yearTotalConsump += consumption;
+                    records.Find(x => x.Name == consumer.name).RecordResult(hour.Date, consumption);
                 }
-                productionRecords.Find(x => x.Name == "Fosil resources").RecordResult(hour.Date, fossilProduction);
+                records.Find(x => x.Name == "Total Consumption").RecordResult(hour.Date, totalConsumption);
+                records.Find(x => x.Name == "Fosil resources").RecordResult(hour.Date, fossilProduction);
 
                 progress++;
                 perc = (int)(100 * progress / hours.Count);
@@ -192,7 +244,7 @@ namespace EC_Simulation
             Debug.WriteLine($"Single wind production: {windTurbines[0].ProduceElectricity(hours[612])}");
             Debug.WriteLine($"Single hydro production: {hydroPowerPlants[0].ProduceElectricity(hours[612])}");
 
-            Debug.WriteLine($"Total consumption: {totalConsump}");
+            Debug.WriteLine($"Total consumption: {yearTotalConsump}");
             Debug.WriteLine($"Total production: {totalProduction}");
             Debug.WriteLine($"Total solar production: {solarTotalProduction}");
             Debug.WriteLine($"Total wind production: {windTotalProduction}");
@@ -201,7 +253,7 @@ namespace EC_Simulation
             Debug.WriteLine("--------------------------");
 
             MessageBox.Show("Simulation complete...");
-            DisplayResult displayResult = new DisplayResult(productionRecords, consumptionRecords);
+            DisplayResult displayResult = new DisplayResult(records);
             displayResult.Show();
         }
 
@@ -358,12 +410,10 @@ namespace EC_Simulation
                     columns += columnNames[i] + ",";
                 }
                 consumerInitializerBackgroundWorker.ReportProgress(progress, "Column Names: " + columns);
-                /*consumerInitializerBackgroundWorker.ReportProgress(progress, name + "-Sample: " + "date: " + schedule[300].Date.ToString()
-                                                                                                    + "Values: " + schedule[300].ConsumeValues[2].Name
-                                                                                                    + ", " + schedule[300].ConsumeValues[2].Value);*/
 
                 allconsumers.Add(new ElectricityConsumer(name, int.Parse(group.Amount.Text), schedule));
-                consumptionRecords.Add(new Record(name));
+                //consumptionRecords.Add(new Record(name));
+                records.Add(new Record(name));
                 consumerInitializerBackgroundWorker.ReportProgress(progress, "Initializing " + name + "complete.");
                 parser.Close();
             }
@@ -388,7 +438,8 @@ namespace EC_Simulation
             {
                 solarPanels.Add(new SolarPanel(efficiency, area, noct, tempCoefficient));
             }
-            productionRecords.Add(new Record("Solar panels"));
+            //productionRecords.Add(new Record("Solar panels"));
+            records.Add(new Record("Solar panels"));
         }
         public void InitilazieWindTurbines(int amount, float bladeArea, float powerCoefficent, float availablity)
         {
@@ -396,7 +447,8 @@ namespace EC_Simulation
             {
                 windTurbines.Add(new WindTurbine(bladeArea, powerCoefficent, availablity));
             }
-            productionRecords.Add(new Record("Wind turbines"));
+            //productionRecords.Add(new Record("Wind turbines"));
+            records.Add(new Record("Wind turbines"));
         }
         public void InitilazieHydroPowerPlanets(int amount, float height, float efficiency)
         {
@@ -404,7 +456,8 @@ namespace EC_Simulation
             {
                 hydroPowerPlants.Add(new HydroPowerPlant(height, efficiency));
             }
-            productionRecords.Add(new Record("Hydropower plants"));
+            //productionRecords.Add(new Record("Hydropower plants"));
+            records.Add(new Record("Hydropower plants"));
         }
         /*public void FillCalendar(string filePath) // control data
         {

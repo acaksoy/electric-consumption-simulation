@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Diagnostics.Eventing.Reader;
 using System.ComponentModel;
+using System.Diagnostics;
 
 namespace EC_Simulation
 {
@@ -66,6 +67,7 @@ namespace EC_Simulation
                         {
                             group.ImportLabel.Text = openFileDialog.SafeFileName;
                             group.FilePath = openFileDialog.FileName;
+                            Debug.WriteLine("FILEPATH:   " + openFileDialog.FileName);
                         }
                     }
 
@@ -134,19 +136,12 @@ namespace EC_Simulation
         {
             if (ValidateChildren())
             {
-                /*if (!isWeatherDataParsed || !isConsumerDataParsed) //buttonfilepathPairs empty? means not all selected.
-                {
-                    errorProvider1.SetError(importWeatherDataButton, "Import all data needed.");
-                    MessageBox.Show("Fill all fields correctly");
-                    return;
-                }*/
+
                 SolarPanelSpecs solarSpecs = new SolarPanelSpecs(int.Parse(solarPanelParamSpecTextBox5.Text), float.Parse(solarPanelParamSpecTextBox1.Text), float.Parse(solarPanelParamSpecTextBox2.Text), float.Parse(solarPanelParamSpecTextBox3.Text), float.Parse(solarPanelParamSpecTextBox4.Text));
                 WindTurbineSpecs windSpecs = new WindTurbineSpecs(int.Parse(windTurbineParamSpecTextBox4.Text), float.Parse(windTurbineParamSpecTextBox1.Text), float.Parse(windTurbineParamSpecTextBox2.Text), float.Parse(windTurbineParamSpecTextBox3.Text));
                 HydroTurbineSpecs hydroSpecs = new HydroTurbineSpecs(int.Parse(hydroPlantParamSpecTextBox3.Text), float.Parse(hydroPlantParamSpecTextBox1.Text), float.Parse(hydroPlantParamSpecTextBox2.Text));
 
-                //simulationManager.InitilazieSolarPanels(int.Parse(solarPanelParamSpecTextBox5.Text), float.Parse(solarPanelParamSpecTextBox1.Text), float.Parse(solarPanelParamSpecTextBox2.Text), float.Parse(solarPanelParamSpecTextBox3.Text), float.Parse(solarPanelParamSpecTextBox4.Text));
-                //simulationManager.InitilazieWindTurbines(int.Parse(windTurbineParamSpecTextBox4.Text), float.Parse(windTurbineParamSpecTextBox1.Text), float.Parse(windTurbineParamSpecTextBox2.Text), float.Parse(windTurbineParamSpecTextBox3.Text));
-                //simulationManager.InitilazieHydroPowerPlanets(int.Parse(hydroPlantParamSpecTextBox3.Text), float.Parse(hydroPlantParamSpecTextBox1.Text), float.Parse(hydroPlantParamSpecTextBox2.Text));
+
                 MessageBox.Show("ready");
                 Simulator sim = new Simulator(controls, solarSpecs,windSpecs,hydroSpecs, weatherDataFilePath, eventDataFilePath);
                 sim.Show();

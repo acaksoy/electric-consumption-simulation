@@ -29,7 +29,7 @@ namespace SimulationClassLibrary
         public override float ProduceElectricity(Hour hour)
         {
             operatingTemp = hour.Temperature + (noct - ambientTemp) * hour.SolarIrradiance / eNoct;
-            float power = area * efficiency * (1 + tempCoefficient * (operatingTemp - refTemp)) * hour.SolarIrradiance;
+            float power = area * efficiency * (1 + tempCoefficient * (operatingTemp - refTemp)) * hour.SolarIrradiance * randomProductionValueMultiplier;
             power = power / 1000; //convert to kW
             return power; 
         }

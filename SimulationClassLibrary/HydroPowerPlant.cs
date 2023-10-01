@@ -21,7 +21,9 @@ namespace SimulationClassLibrary
 
         public override float ProduceElectricity(Hour hour)
         {
-            float power = WaterDensity * GravitationalForce * hour.Discharge * height * efficiency * randomProductionValueMultiplier;
+            //Stromproduktion des Wasserkraftwerks berechnen.
+            float power = WaterDensity * GravitationalForce * hour.Discharge * height * efficiency;
+            //Umrechnung von Watt in Kilowatt
             power = power / 1000; //kW
             return power;
 

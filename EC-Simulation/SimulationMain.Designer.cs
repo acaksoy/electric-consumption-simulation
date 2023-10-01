@@ -932,7 +932,7 @@
             Controls.Add(importLabelWD);
             Controls.Add(importWeatherDataButton);
             Name = "SimulationMain";
-            Text = "Simulation";
+            Text = "SimulationMain";
             productionParamPanel.ResumeLayout(false);
             productionParamPanel.PerformLayout();
             hydroPlantParamPanel.ResumeLayout(false);

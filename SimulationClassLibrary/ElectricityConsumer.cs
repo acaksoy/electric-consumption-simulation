@@ -14,16 +14,15 @@ namespace SimulationClassLibrary
             Date = date;
             ConsumeValues = consumeValues;
         }
-        public DateTime Date;
-        public List<ConsumeValue> ConsumeValues; //dishwasher value
+        public DateTime Date; // Date of electricity consumption (dd.mm.yyyy hh:mm)
+        public List<ConsumeValue> ConsumeValues; //List of units and consumed electricity
     }
     public struct ConsumeValue
     {
         public ConsumeValue(string name, float value)
         {
-            Name = name;
-            Value = value;
-            // get set Value*katsayi dirty mirty bi bakalim ona
+            Name = name; //Name of the unit that uses electricity
+            Value = value; // used electricity in kW
         }
         public string Name;
         public float Value;
@@ -46,20 +45,26 @@ namespace SimulationClassLibrary
         public float ConsumeElectricity(Hour hour) // kWh because of data
         {
             float totalConsumption = 0;
+            float hourlyConsumption = 0;
             foreach (HourlyConsumption hourlyCon in schedule)
             {
                 if (DateTime.Compare(hour.Date, hourlyCon.Date) == 0) //all consume values are under single date
                 {
                     foreach (ConsumeValue consumption in hourlyCon.ConsumeValues)
                     {
-                        float randomConsumptionValueMultiplier = (float)random.NextDouble() * (maxValue - minValue) + minValue;
-                        totalConsumption += consumption.Value * randomConsumptionValueMultiplier;
+
+                        hourlyConsumption += consumption.Value;
                     }
                 }
             }
-            return totalConsumption * numberOfHousholds;
+            for(int i = 0; i < numberOfHousholds; i++)
+            {
+                float randomConsumptionValueMultiplier = (float)random.NextDouble() * (maxValue - minValue) + minValue;
+                totalConsumption += hourlyConsumption * randomConsumptionValueMultiplier;
+            }
+            return totalConsumption; // * numberOfHousholds.
         }
-        public float ConsumeElectricity(Hour hour, Event ev) 
+        /*public float ConsumeElectricity(Hour hour, Event ev) 
         {
             float totalConsumption = 0;
             float evValMultiplier = 1;
@@ -76,6 +81,6 @@ namespace SimulationClassLibrary
                 }
             }
             return totalConsumption * numberOfHousholds;
-        }
+        }*/
     }
 }

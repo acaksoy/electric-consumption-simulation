@@ -70,9 +70,9 @@ namespace EC_Simulation
             consumptionRecords.Add(new Record("Total Consumption"));*/
 
 
-            records.Add(new Record("Fosil resources"));
-            records.Add(new Record("Total Production"));
-            records.Add(new Record("Total Consumption"));
+            records.Add(new Record("Elec. Prod. Fossil"));
+            records.Add(new Record("Total Elec. Prod. Renewable"));
+            records.Add(new Record("Total Elec. Consumption"));
 
             mainBackgroundWorker = new BackgroundWorker();
             mainBackgroundWorker.DoWork += mainBackgroundWorker_DoWork;
@@ -103,10 +103,21 @@ namespace EC_Simulation
         {
             int progress = 0;
             int perc = 0;
-
+            
             //Event activeEvent = null;
             foreach (Hour hour in hours)
             {
+                double solarElecGenTotal = 0;
+                double windElecGenTotal = 0;
+                double hydroElecGenTotal = 0;
+                double totalPower = 0;
+                double fossilProduction = 0;
+
+                double totalConsumption = 0;
+
+                bool fosilProductionActive = true;
+
+                Debug.WriteLine($"weather: temp: {hour.Temperature}, solarirr: {hour.SolarIrradiance}");
                 List<Event> activeEvents = new List<Event>();
                 DateOnly date = DateOnly.FromDateTime(hour.Date);
                 TimeOnly time = TimeOnly.FromDateTime(hour.Date);
@@ -138,25 +149,21 @@ namespace EC_Simulation
                                     break;
                             }
                         }
+                        if (ev.EffectedUnitName == "Fosil" && ev.EffectValue == 0)
+                        {
+                            fosilProductionActive = false;
+                        }
 
                     }
                 }
-                double solarElecGenTotal = 0;
-                double windElecGenTotal = 0;
-                double hydroElecGenTotal = 0;
-                double totalPower = 0;
-                double fossilProduction = 0;
-                
-                double totalConsumption = 0;
 
-                bool fosilProductionActive = true;
-                foreach(Event ev in activeEvents)
+                /*foreach(Event ev in activeEvents)
                 {
-                    if(ev.EffectedClass == "Fosil" && ev.EffectValue == 0)
+                    if(ev.EffectedUnitName == "Fosil" && ev.EffectValue == 0)
                     {
                         fosilProductionActive = false;
                     }
-                }
+                }*/
                 
                 foreach (SolarPanel panel in solarPanels)
                 {
@@ -181,7 +188,7 @@ namespace EC_Simulation
                 hydroTotalProduction += hydroElecGenTotal;//test
 
                 totalPower = solarElecGenTotal + windElecGenTotal + hydroElecGenTotal;
-                records.Find(x => x.Name == "Total Production").RecordResult(hour.Date, totalPower);
+                records.Find(x => x.Name == "Total Elec. Prod. Renewable").RecordResult(hour.Date, totalPower);
                 totalProduction += totalPower;//test
 
 
@@ -195,25 +202,23 @@ namespace EC_Simulation
                             consumption *= ev.EffectValue;
                         }
                     }
-                    //totalConsumption += consumption;
-                    //totalConsump += consumption;
-                    if (totalConsumption + consumption >= totalPower)
-                    {
-                        if (!fosilProductionActive) consumption = 0;
-
-                        fossilProduction += consumption;                                             
-                        fosilTotalProduction += fossilProduction;//test
-    
-                    }
                     totalConsumption += consumption;
-                    yearTotalConsump += consumption;
+
                     records.Find(x => x.Name == consumer.name).RecordResult(hour.Date, consumption);
                 }
-                records.Find(x => x.Name == "Total Consumption").RecordResult(hour.Date, totalConsumption);
-                records.Find(x => x.Name == "Fosil resources").RecordResult(hour.Date, fossilProduction);
+                if (totalConsumption > totalPower)
+                {
+                    if (fosilProductionActive)
+                    {
+                        fossilProduction = totalConsumption - totalPower;
+                    }
+                }
+                records.Find(x => x.Name == "Total Elec. Consumption").RecordResult(hour.Date, totalConsumption);
+                records.Find(x => x.Name == "Elec. Prod. Fossil").RecordResult(hour.Date, fossilProduction);
 
                 progress++;
                 perc = (int)(100 * progress / hours.Count);
+                
                 if(perc % 10 == 0) {
                     mainBackgroundWorker.ReportProgress(perc);
                 }
@@ -224,16 +229,16 @@ namespace EC_Simulation
         private void mainBackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             simProgresBar.Value = e.ProgressPercentage;
-            if (e.UserState != null)
+            simProgresLabel.Text = "Simulating... %" + e.ProgressPercentage.ToString();
+            /*if (e.UserState != null)
             {
-                List<string> messages = e.UserState as List<string>;               
-                simProgresLabel.Text = "Simulating... %" + e.ProgressPercentage.ToString();
+                List<string> messages = e.UserState as List<string>;                              
                 for(int i=0; i< messages.Count; i++)
                 {
                     simTextBox.AppendText(messages[i] + Environment.NewLine);
                 }
                 
-            }
+            }*/
         }
         private void mainBackgroundWorker_RunWorkCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
@@ -328,7 +333,7 @@ namespace EC_Simulation
                 }
                 DateTime date = DateTime.ParseExact(row[0], "g", CultureInfo.CurrentCulture); // g = dd.mm.yyyy hh:mm
                 hours.Add(new Hour(date, float.Parse(row[1], CultureInfo.InvariantCulture), float.Parse(row[2], CultureInfo.InvariantCulture), float.Parse(row[3], CultureInfo.InvariantCulture), float.Parse(row[4], CultureInfo.InvariantCulture), float.Parse(row[5], CultureInfo.InvariantCulture)));
-                if (progress % 25 == 0)
+                if (progress % 10 == 0)
                 {
                     calendarInitializerBackgroundWorker.ReportProgress(progress);
                 }

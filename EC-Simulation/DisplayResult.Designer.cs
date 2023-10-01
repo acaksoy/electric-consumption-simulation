@@ -30,7 +30,6 @@
         {
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             DataGridView1 = new DataGridView();
             chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             resultsComboBox = new ComboBox();
@@ -50,7 +49,10 @@
             button1 = new Button();
             button2 = new Button();
             button3 = new Button();
-            checkBox1 = new CheckBox();
+            checkBoxFossil = new CheckBox();
+            yearlyTotalProductionLabel = new Label();
+            yearlyTotalConsumptionLabel = new Label();
+            selectedYearlyTotal = new Label();
             ((System.ComponentModel.ISupportInitialize)DataGridView1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)chart1).BeginInit();
             SuspendLayout();
@@ -62,7 +64,7 @@
             DataGridView1.Name = "DataGridView1";
             DataGridView1.ReadOnly = true;
             DataGridView1.RowTemplate.Height = 25;
-            DataGridView1.Size = new Size(309, 684);
+            DataGridView1.Size = new Size(309, 636);
             DataGridView1.TabIndex = 0;
             // 
             // chart1
@@ -73,12 +75,7 @@
             chart1.Legends.Add(legend1);
             chart1.Location = new Point(336, 36);
             chart1.Name = "chart1";
-            series1.ChartArea = "ChartArea1";
-            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.StackedArea;
-            series1.Legend = "Legend1";
-            series1.Name = "Series1";
-            chart1.Series.Add(series1);
-            chart1.Size = new Size(1246, 665);
+            chart1.Size = new Size(1307, 665);
             chart1.TabIndex = 1;
             chart1.Text = "chart1";
             // 
@@ -104,7 +101,7 @@
             // checkBoxSolarPanel
             // 
             checkBoxSolarPanel.AutoSize = true;
-            checkBoxSolarPanel.Location = new Point(338, 705);
+            checkBoxSolarPanel.Location = new Point(571, 754);
             checkBoxSolarPanel.Name = "checkBoxSolarPanel";
             checkBoxSolarPanel.Size = new Size(83, 19);
             checkBoxSolarPanel.TabIndex = 4;
@@ -116,7 +113,7 @@
             // checkBoxWindTurbine
             // 
             checkBoxWindTurbine.AutoSize = true;
-            checkBoxWindTurbine.Location = new Point(338, 730);
+            checkBoxWindTurbine.Location = new Point(677, 754);
             checkBoxWindTurbine.Name = "checkBoxWindTurbine";
             checkBoxWindTurbine.Size = new Size(83, 19);
             checkBoxWindTurbine.TabIndex = 5;
@@ -176,7 +173,7 @@
             // checkBoxHouse3
             // 
             checkBoxHouse3.AutoSize = true;
-            checkBoxHouse3.Location = new Point(690, 705);
+            checkBoxHouse3.Location = new Point(677, 704);
             checkBoxHouse3.Name = "checkBoxHouse3";
             checkBoxHouse3.Size = new Size(83, 19);
             checkBoxHouse3.TabIndex = 10;
@@ -188,7 +185,7 @@
             // checkBoxBusiness1
             // 
             checkBoxBusiness1.AutoSize = true;
-            checkBoxBusiness1.Location = new Point(690, 730);
+            checkBoxBusiness1.Location = new Point(677, 729);
             checkBoxBusiness1.Name = "checkBoxBusiness1";
             checkBoxBusiness1.Size = new Size(83, 19);
             checkBoxBusiness1.TabIndex = 11;
@@ -200,7 +197,7 @@
             // checkBoxBusiness2
             // 
             checkBoxBusiness2.AutoSize = true;
-            checkBoxBusiness2.Location = new Point(803, 705);
+            checkBoxBusiness2.Location = new Point(787, 705);
             checkBoxBusiness2.Name = "checkBoxBusiness2";
             checkBoxBusiness2.Size = new Size(83, 19);
             checkBoxBusiness2.TabIndex = 12;
@@ -212,7 +209,7 @@
             // checkBoxBusiness3
             // 
             checkBoxBusiness3.AutoSize = true;
-            checkBoxBusiness3.Location = new Point(803, 730);
+            checkBoxBusiness3.Location = new Point(787, 729);
             checkBoxBusiness3.Name = "checkBoxBusiness3";
             checkBoxBusiness3.Size = new Size(83, 19);
             checkBoxBusiness3.TabIndex = 13;
@@ -224,7 +221,7 @@
             // checkBoxPublic
             // 
             checkBoxPublic.AutoSize = true;
-            checkBoxPublic.Location = new Point(925, 705);
+            checkBoxPublic.Location = new Point(889, 705);
             checkBoxPublic.Name = "checkBoxPublic";
             checkBoxPublic.Size = new Size(83, 19);
             checkBoxPublic.TabIndex = 14;
@@ -236,7 +233,7 @@
             // checkBoxTotalCons
             // 
             checkBoxTotalCons.AutoSize = true;
-            checkBoxTotalCons.Location = new Point(925, 730);
+            checkBoxTotalCons.Location = new Point(889, 729);
             checkBoxTotalCons.Name = "checkBoxTotalCons";
             checkBoxTotalCons.Size = new Size(83, 19);
             checkBoxTotalCons.TabIndex = 15;
@@ -278,23 +275,54 @@
             button3.UseVisualStyleBackColor = true;
             button3.Click += DrawGraph;
             // 
-            // checkBox1
+            // checkBoxFossil
             // 
-            checkBox1.AutoSize = true;
-            checkBox1.Location = new Point(1014, 705);
-            checkBox1.Name = "checkBox1";
-            checkBox1.Size = new Size(83, 19);
-            checkBox1.TabIndex = 19;
-            checkBox1.Tag = "Consumption";
-            checkBox1.Text = "checkBox9";
-            checkBox1.UseVisualStyleBackColor = true;
+            checkBoxFossil.AutoSize = true;
+            checkBoxFossil.Location = new Point(787, 754);
+            checkBoxFossil.Name = "checkBoxFossil";
+            checkBoxFossil.Size = new Size(83, 19);
+            checkBoxFossil.TabIndex = 19;
+            checkBoxFossil.Tag = "Consumption";
+            checkBoxFossil.Text = "checkBox9";
+            checkBoxFossil.UseVisualStyleBackColor = true;
+            checkBoxFossil.CheckedChanged += CheckBox_Checked;
+            // 
+            // yearlyTotalProductionLabel
+            // 
+            yearlyTotalProductionLabel.AutoSize = true;
+            yearlyTotalProductionLabel.Location = new Point(21, 734);
+            yearlyTotalProductionLabel.Name = "yearlyTotalProductionLabel";
+            yearlyTotalProductionLabel.Size = new Size(200, 15);
+            yearlyTotalProductionLabel.TabIndex = 20;
+            yearlyTotalProductionLabel.Text = "Total Elec. Prod. Renewable (annual):";
+            // 
+            // yearlyTotalConsumptionLabel
+            // 
+            yearlyTotalConsumptionLabel.AutoSize = true;
+            yearlyTotalConsumptionLabel.Location = new Point(21, 762);
+            yearlyTotalConsumptionLabel.Name = "yearlyTotalConsumptionLabel";
+            yearlyTotalConsumptionLabel.Size = new Size(185, 15);
+            yearlyTotalConsumptionLabel.TabIndex = 21;
+            yearlyTotalConsumptionLabel.Text = "Total Elec. Consumption (annual):";
+            // 
+            // selectedYearlyTotal
+            // 
+            selectedYearlyTotal.AutoSize = true;
+            selectedYearlyTotal.Location = new Point(21, 709);
+            selectedYearlyTotal.Name = "selectedYearlyTotal";
+            selectedYearlyTotal.Size = new Size(163, 15);
+            selectedYearlyTotal.TabIndex = 22;
+            selectedYearlyTotal.Text = "Selected Record Annual Total:";
             // 
             // DisplayResult
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1600, 769);
-            Controls.Add(checkBox1);
+            ClientSize = new Size(1655, 786);
+            Controls.Add(selectedYearlyTotal);
+            Controls.Add(yearlyTotalConsumptionLabel);
+            Controls.Add(yearlyTotalProductionLabel);
+            Controls.Add(checkBoxFossil);
             Controls.Add(button3);
             Controls.Add(button2);
             Controls.Add(button1);
@@ -344,6 +372,9 @@
         private Button button1;
         private Button button2;
         private Button button3;
-        private CheckBox checkBox1;
+        private CheckBox checkBoxFossil;
+        private Label yearlyTotalProductionLabel;
+        private Label yearlyTotalConsumptionLabel;
+        private Label selectedYearlyTotal;
     }
 }

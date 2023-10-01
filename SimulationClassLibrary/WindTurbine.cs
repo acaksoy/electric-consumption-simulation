@@ -25,10 +25,14 @@ namespace SimulationClassLibrary
 
         public override float ProduceElectricity(Hour hour)
         {
-            if (hour.WindSpeed < 3.5f || hour.WindSpeed > 25) return 0;
+            // Wenn die Windgeschwindigkeit zu hoch oder zu niedrig ist, produziert keine Strom.
+            if (hour.WindSpeed < 3f || hour.WindSpeed > 25) return 0;
 
-            airDenstiy = hour.AirPressure*100 / (gasConstatn * (hour.Temperature + kelvin)); //100 -> hPa to Pa. air density in kg/m3
-            float power = 0.5f * airDenstiy * bladeArea * powerCoefficent * availablity * (float)Math.Pow(hour.WindSpeed, 3) * randomProductionValueMultiplier;
+            // Luftdichte berechnen.
+            airDenstiy = hour.AirPressure*100 / (gasConstatn * (hour.Temperature + kelvin));
+            //Stromproduktion der Windkraftanlage berechnen.
+            float power = 0.5f * airDenstiy * bladeArea * powerCoefficent * availablity * (float)Math.Pow(hour.WindSpeed, 3);
+            //Umrechnung von Watt in Kilowatt
             power = power / 1000;
             return power;
         }

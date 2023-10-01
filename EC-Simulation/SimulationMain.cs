@@ -46,7 +46,7 @@ namespace EC_Simulation
                 openFileDialog.Filter = "CSV file (*.csv)|*.csv";
                 openFileDialog.FilterIndex = 1;
                 openFileDialog.RestoreDirectory = true;
-                
+
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     if (button == importWeatherDataButton)
@@ -67,7 +67,7 @@ namespace EC_Simulation
                         {
                             group.ImportLabel.Text = openFileDialog.SafeFileName;
                             group.FilePath = openFileDialog.FileName;
-                            Debug.WriteLine("FILEPATH:   " + openFileDialog.FileName);
+                            return;
                         }
                     }
 
@@ -137,13 +137,22 @@ namespace EC_Simulation
             if (ValidateChildren())
             {
 
-                SolarPanelSpecs solarSpecs = new SolarPanelSpecs(int.Parse(solarPanelParamSpecTextBox5.Text), float.Parse(solarPanelParamSpecTextBox1.Text), float.Parse(solarPanelParamSpecTextBox2.Text), float.Parse(solarPanelParamSpecTextBox3.Text), float.Parse(solarPanelParamSpecTextBox4.Text));
-                WindTurbineSpecs windSpecs = new WindTurbineSpecs(int.Parse(windTurbineParamSpecTextBox4.Text), float.Parse(windTurbineParamSpecTextBox1.Text), float.Parse(windTurbineParamSpecTextBox2.Text), float.Parse(windTurbineParamSpecTextBox3.Text));
-                HydroTurbineSpecs hydroSpecs = new HydroTurbineSpecs(int.Parse(hydroPlantParamSpecTextBox3.Text), float.Parse(hydroPlantParamSpecTextBox1.Text), float.Parse(hydroPlantParamSpecTextBox2.Text));
+                SolarPanelSpecs solarSpecs = new SolarPanelSpecs(int.Parse(solarPanelParamSpecTextBox5.Text),
+                                                                 float.Parse(solarPanelParamSpecTextBox1.Text),
+                                                                 float.Parse(solarPanelParamSpecTextBox2.Text),
+                                                                 float.Parse(solarPanelParamSpecTextBox3.Text),
+                                                                 float.Parse(solarPanelParamSpecTextBox4.Text));
 
+                WindTurbineSpecs windSpecs = new WindTurbineSpecs(int.Parse(windTurbineParamSpecTextBox4.Text),
+                                                                  float.Parse(windTurbineParamSpecTextBox1.Text),
+                                                                  float.Parse(windTurbineParamSpecTextBox2.Text),
+                                                                  float.Parse(windTurbineParamSpecTextBox3.Text));
 
-                MessageBox.Show("ready");
-                Simulator sim = new Simulator(controls, solarSpecs,windSpecs,hydroSpecs, weatherDataFilePath, eventDataFilePath);
+                HydroTurbineSpecs hydroSpecs = new HydroTurbineSpecs(int.Parse(hydroPlantParamSpecTextBox3.Text),
+                                                                     float.Parse(hydroPlantParamSpecTextBox1.Text),
+                                                                     float.Parse(hydroPlantParamSpecTextBox2.Text));
+
+                Simulator sim = new Simulator(controls, solarSpecs, windSpecs, hydroSpecs, weatherDataFilePath, eventDataFilePath);
                 sim.Show();
             }
             else
@@ -190,7 +199,7 @@ namespace EC_Simulation
         public float Area;
         public float Noct;
         public float TempCoefficient;
-  
+
     }
     public struct WindTurbineSpecs
     {

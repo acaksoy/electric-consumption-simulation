@@ -28,9 +28,10 @@ namespace SimulationClassLibrary
 
         public override float ProduceElectricity(Hour hour)
         {
-            operatingTemp = hour.Temperature + (noct - ambientTemp) * hour.SolarIrradiance / eNoct;
-            float power = area * efficiency * (1 + tempCoefficient * (operatingTemp - refTemp)) * hour.SolarIrradiance * randomProductionValueMultiplier;
-            power = power / 1000; //convert to kW
+            operatingTemp = hour.Temperature + (noct - ambientTemp) * hour.SolarIrradiance / eNoct; //Betriebstemperatur berechnen.
+            float power = area * efficiency * (1 + tempCoefficient * (operatingTemp - refTemp)) * hour.SolarIrradiance; //Vom Solarpanel erzeugten Strom berechnen.
+            power = power / 1000; //Das Ergebnis in Watt in Kilowatt umwandeln.
+
             return power; 
         }
     }

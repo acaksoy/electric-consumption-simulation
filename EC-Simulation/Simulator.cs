@@ -30,7 +30,6 @@ namespace EC_Simulation
             this.hydroSpecs = hydroSpecs;
 
             simulationManager = new SimulationManager(simProgresLabel, simulationProgressBar, loggerTextBox, controls, weatherDataFilePath, eventDataFilePath);
-
         }
 
         private void Simulator_Shown(object sender, EventArgs e)

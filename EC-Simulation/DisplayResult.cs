@@ -19,7 +19,7 @@ namespace EC_Simulation
     {
         //List<Record> productionRecords = null;
         //List<Record> consumptionRecords = null;
-        List<Record> records; //=null;
+        List<Record> records = new List<Record>(); //=null;
         Dictionary<int, Record> indexRecordPairs = new Dictionary<int, Record>();
         int totalProductionIndex = 0;
         int totalConsumptionIndex = 0;
@@ -35,18 +35,7 @@ namespace EC_Simulation
             //this.productionRecords = productionRecords;
             //this.consumptionRecords = consumptionRecords;
             this.records = records;
-            Record totalConRec = records.Find(x => x.Name == "Total Elec. Consumption");
-            foreach (KeyValuePair<DateTime, double> pair in totalConRec.results)
-            {
-                yearlyTotalConsumption += pair.Value;
-            }
-            yearlyTotalConsumptionLabel.Text += $" {yearlyTotalConsumption}";
-            Record totalProdRec = records.Find(x => x.Name == "Total Elec. Prod. Renewable");
-            foreach (KeyValuePair<DateTime, double> pair in totalProdRec.results)
-            {
-                yearlyTotalProduction += pair.Value;
-            }
-            yearlyTotalProductionLabel.Text += $" {yearlyTotalProduction}";
+
         }
         private void DisplayResult_Shown(object sender, EventArgs e)
         {
@@ -73,8 +62,20 @@ namespace EC_Simulation
 
             chart1.ChartAreas[0].AxisX.IntervalType = DateTimeIntervalType.Auto;
             chart1.ChartAreas[0].AxisY.IntervalAutoMode = IntervalAutoMode.VariableCount;
-            chart1.ChartAreas[0].AxisX.ScaleView.Zoom(0, 10);
+            chart1.ChartAreas[0].AxisX.ScaleView.Zoom(0, 30);
 
+            Record totalConRec = records.Find(x => x.Name == "Total Elec. Consumption") ?? throw new InvalidOperationException("Record could not be found!");
+            foreach (KeyValuePair<DateTime, double> pair in totalConRec.results)
+            {
+                yearlyTotalConsumption += pair.Value;
+            }
+            yearlyTotalConsumptionLabel.Text += $" {yearlyTotalConsumption}";
+            Record totalProdRec = records.Find(x => x.Name == "Total Elec. Prod. Renewable") ?? throw new InvalidOperationException("Record could not be found!");
+            foreach (KeyValuePair<DateTime, double> pair in totalProdRec.results)
+            {
+                yearlyTotalProduction += pair.Value;
+            }
+            yearlyTotalProductionLabel.Text += $" {yearlyTotalProduction}";
             /*for (int i = 0; i < productionRecords.Count; i++)
             {
                 int index = resultsComboBox.Items.Add($"Electricity production from {productionRecords[i].Name}");
@@ -185,6 +186,7 @@ namespace EC_Simulation
                             chart1.ChartAreas[0].AxisX.Title = "Hours";
                             chartTuple.Item2.ChartType = SeriesChartType.Spline;
                             chart1.ChartAreas[0].AxisX.IntervalType = DateTimeIntervalType.Auto;
+                            chart1.ChartAreas[0].AxisX.ScaleView.Zoom(0, 24);
                             foreach (KeyValuePair<DateTime, double> result in chartTuple.Item3.results)
                             {
                                 chartTuple.Item2.Points.AddXY(result.Key.ToString(), result.Value);
@@ -196,6 +198,7 @@ namespace EC_Simulation
                             chart1.ChartAreas[0].AxisX.Title = "Days";
                             chartTuple.Item2.ChartType = SeriesChartType.Spline;
                             chart1.ChartAreas[0].AxisX.IntervalType = DateTimeIntervalType.Auto;
+                            chart1.ChartAreas[0].AxisX.ScaleView.Zoom(0, 31);
                             DateTime currentDay = records[0].results.Keys.First<DateTime>();
                             double dailyValue = 0;
                             foreach (KeyValuePair<DateTime, double> result in chartTuple.Item3.results)
@@ -218,6 +221,7 @@ namespace EC_Simulation
                             chart1.ChartAreas[0].AxisX.Title = "Monthly";
                             chartTuple.Item2.ChartType = SeriesChartType.Column;
                             chart1.ChartAreas[0].AxisX.Interval = 1;
+                            chart1.ChartAreas[0].AxisX.ScaleView.Zoom(0, 12);
                             DateTime currentMonth = records[0].results.Keys.First<DateTime>();
                             double monthlyValue = 0;
                             foreach (KeyValuePair<DateTime, double> result in chartTuple.Item3.results)

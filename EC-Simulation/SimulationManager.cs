@@ -34,6 +34,10 @@ namespace EC_Simulation
         BackgroundWorker consumerInitializerBackgroundWorker;
         BackgroundWorker calendarInitializerBackgroundWorker;
 
+        public event EventHandler<string> NullRowFoundEventHandler;
+
+
+
         List<ControlGroup> controls;
         Label simProgresLabel;
         ProgressBar simProgresBar;
@@ -51,6 +55,7 @@ namespace EC_Simulation
 
         public SimulationManager(Label simLabel, ProgressBar simPBar, TextBox simTB, List<ControlGroup> controls, string weatherDataFilePath, string eventDataFilePath) //initilaze icin bilgiler önden yüklenmeli
         {
+            
             simProgresLabel = simLabel;
             simProgresBar = simPBar;
             simTextBox = simTB;
@@ -79,18 +84,21 @@ namespace EC_Simulation
             mainBackgroundWorker.RunWorkerCompleted += mainBackgroundWorker_RunWorkCompleted;
             mainBackgroundWorker.ProgressChanged += mainBackgroundWorker_ProgressChanged;
             mainBackgroundWorker.WorkerReportsProgress = true;
+            mainBackgroundWorker.WorkerSupportsCancellation = true;
 
             calendarInitializerBackgroundWorker = new BackgroundWorker();
             calendarInitializerBackgroundWorker.DoWork += calendarInitializerBackgroundWorker_DoWork;
             calendarInitializerBackgroundWorker.RunWorkerCompleted += calendarInitializerBackgroundWorker_RunWorkCompleted;
             calendarInitializerBackgroundWorker.ProgressChanged += calendarInitializerBackgroundWorker_ProgressChanged;
             calendarInitializerBackgroundWorker.WorkerReportsProgress = true;
+            calendarInitializerBackgroundWorker.WorkerSupportsCancellation = true;
 
             consumerInitializerBackgroundWorker = new BackgroundWorker();
             consumerInitializerBackgroundWorker.DoWork += consumerInitializerBackgroundWorker_DoWork;
             consumerInitializerBackgroundWorker.RunWorkerCompleted += consumerInitializerBackgroundWorker_RunWorkCompleted;
             consumerInitializerBackgroundWorker.ProgressChanged += consumerInitializerBackgroundWorker_ProgressChanged;
             consumerInitializerBackgroundWorker.WorkerReportsProgress = true;
+            consumerInitializerBackgroundWorker.WorkerSupportsCancellation = true;
         }
 
         public void Simulate()
@@ -99,7 +107,7 @@ namespace EC_Simulation
             calendarInitializerBackgroundWorker.RunWorkerAsync();
         }
 
-        private void mainBackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        private void mainBackgroundWorker_DoWork(object? sender, DoWorkEventArgs e)
         {
             int progress = 0;
             int perc = 0;
@@ -170,7 +178,9 @@ namespace EC_Simulation
                     solarElecGenTotal += panel.ProduceElectricity(hour);
                 }
 
-                records.Find(x => x.Name == "Solar panels").RecordResult(hour.Date, solarElecGenTotal);
+
+                Record spRecord = records.Find(x => x.Name == "Solar panels") ?? throw new InvalidOperationException("Record could not be found!");
+                spRecord.RecordResult(hour.Date, solarElecGenTotal);
 
                 solarTotalProduction += solarElecGenTotal;//test
                 
@@ -178,17 +188,24 @@ namespace EC_Simulation
                 {
                     windElecGenTotal += wind.ProduceElectricity(hour);
                 }
-                records.Find(x => x.Name == "Wind turbines").RecordResult(hour.Date, windElecGenTotal);
+
+                Record wtRecord = records.Find(x => x.Name == "Wind turbines") ?? throw new InvalidOperationException("Record could not be found!");
+                wtRecord.RecordResult(hour.Date, windElecGenTotal);
                 windTotalProduction += windElecGenTotal;//test
+
                 foreach (HydroPowerPlant hydro in hydroPowerPlants)
                 {
                     hydroElecGenTotal += hydro.ProduceElectricity(hour);
                 }
-                records.Find(x => x.Name == "Hydropower plants").RecordResult(hour.Date, hydroElecGenTotal);
+
+                Record hppRecord = records.Find(x => x.Name == "Hydropower plants") ?? throw new InvalidOperationException("Record could not be found!");
+                hppRecord.RecordResult(hour.Date, hydroElecGenTotal);
                 hydroTotalProduction += hydroElecGenTotal;//test
 
                 totalPower = solarElecGenTotal + windElecGenTotal + hydroElecGenTotal;
-                records.Find(x => x.Name == "Total Elec. Prod. Renewable").RecordResult(hour.Date, totalPower);
+
+                Record teprRecord = records.Find(x => x.Name == "Total Elec. Prod. Renewable") ?? throw new InvalidOperationException("Record could not be found!");
+                teprRecord.RecordResult(hour.Date, totalPower);
                 totalProduction += totalPower;//test
 
 
@@ -203,8 +220,8 @@ namespace EC_Simulation
                         }
                     }
                     totalConsumption += consumption;
-
-                    records.Find(x => x.Name == consumer.name).RecordResult(hour.Date, consumption);
+                    Record cRecord = records.Find(x => x.Name == consumer.name) ?? throw new InvalidOperationException("Record could not be found!");
+                    cRecord.RecordResult(hour.Date, consumption);
                 }
                 if (totalConsumption > totalPower)
                 {
@@ -213,8 +230,10 @@ namespace EC_Simulation
                         fossilProduction = totalConsumption - totalPower;
                     }
                 }
-                records.Find(x => x.Name == "Total Elec. Consumption").RecordResult(hour.Date, totalConsumption);
-                records.Find(x => x.Name == "Elec. Prod. Fossil").RecordResult(hour.Date, fossilProduction);
+                Record tecRecord = records.Find(x => x.Name == "Total Elec. Consumption") ?? throw new InvalidOperationException("Record could not be found!");
+                tecRecord.RecordResult(hour.Date, totalConsumption);
+                Record fRecord = records.Find(x => x.Name == "Elec. Prod. Fossil") ?? throw new InvalidOperationException("Record could not be found!");
+                fRecord.RecordResult(hour.Date, fossilProduction);
 
                 progress++;
                 perc = (int)(100 * progress / hours.Count);
@@ -226,7 +245,7 @@ namespace EC_Simulation
                 
             }
         }
-        private void mainBackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        private void mainBackgroundWorker_ProgressChanged(object? sender, ProgressChangedEventArgs e)
         {
             simProgresBar.Value = e.ProgressPercentage;
             simProgresLabel.Text = "Simulating... %" + e.ProgressPercentage.ToString();
@@ -240,7 +259,7 @@ namespace EC_Simulation
                 
             }*/
         }
-        private void mainBackgroundWorker_RunWorkCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void mainBackgroundWorker_RunWorkCompleted(object? sender, RunWorkerCompletedEventArgs e)
         {
             simProgresBar.Value = 100;
             simProgresLabel.Text = "Complete";
@@ -262,8 +281,9 @@ namespace EC_Simulation
             displayResult.Show();
         }
 
-        private void calendarInitializerBackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        private void calendarInitializerBackgroundWorker_DoWork(object? sender, DoWorkEventArgs e)
         {
+            
             int progress = 0;
             int counter = 0;
             int lineCount = File.ReadLines(eventDataFilePath).Count();
@@ -274,14 +294,21 @@ namespace EC_Simulation
             parserEvent.SetDelimiters(";");
 
             parserEvent.ReadLine(); // passing first row
-            string[] rowEvent = { };
+            string[]? rowEvent = { };
             while (!parserEvent.EndOfData)
             {
                 counter++;
                 progress = (int)100 * counter / lineCount;
 
                 rowEvent = parserEvent.ReadFields();
-                for (int i = 0; i < rowEvent.Length; i++) //checks if columns has empty data
+                if(rowEvent == null || rowEvent.Length == 0)
+                {
+                    e.Cancel = true;
+                    NullRowFoundEventHandler?.Invoke(this, "Random Events");
+                    
+                }              
+
+                for (int i = 0; i < rowEvent!.Length; i++) //checks if columns has empty data
                 {
                     if (rowEvent[i] == "")
                     {
@@ -317,14 +344,19 @@ namespace EC_Simulation
             parser.SetDelimiters(";");
 
             parser.ReadLine(); // passing first row
-            string[] row = { };
+            string[]? row = { };
             while (!parser.EndOfData)
             {
                 counter++;
                 progress = (int) 100 * counter / lineCount;
 
                 row = parser.ReadFields();
-                for (int i = 0; i < row.Length; i++) //checks if columns has empty data
+                if(row == null || row.Length == 0)
+                {
+                    e.Cancel = true;
+                    NullRowFoundEventHandler?.Invoke(this, "Weather Data");
+                }
+                for (int i = 0; i < row!.Length; i++) //checks if columns has empty data
                 {
                     if (row[i] == "")
                     {
@@ -340,20 +372,20 @@ namespace EC_Simulation
             }
             parser.Close();           
         }
-        private void calendarInitializerBackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        private void calendarInitializerBackgroundWorker_ProgressChanged(object? sender, ProgressChangedEventArgs e)
         {
             if (e.UserState != null)
             {
                 simTextBox.AppendText($"{(string)e.UserState} --- Initializing Calendar %{e.ProgressPercentage}" + Environment.NewLine);
             }
         }
-        private void calendarInitializerBackgroundWorker_RunWorkCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void calendarInitializerBackgroundWorker_RunWorkCompleted(object? sender, RunWorkerCompletedEventArgs e)
         {
             simTextBox.AppendText("Initilazing calendar complete." + Environment.NewLine);
             consumerInitializerBackgroundWorker.RunWorkerAsync();
         }
 
-        private void consumerInitializerBackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
+        private void consumerInitializerBackgroundWorker_DoWork(object? sender, DoWorkEventArgs e)
         {
             int progress = 0;
             int counter = 0;
@@ -365,19 +397,16 @@ namespace EC_Simulation
                 counter++;
                 progress = (int)(100*counter / controls.Count);
 
-                string name = "default";
-                if (group.ImportButton.Tag != null)
-                {
-                    name = group.ImportButton.Tag.ToString();
-                }
+                string name = name = group.ImportButton.Tag.ToString() ??  "default";
+ 
                 consumerInitializerBackgroundWorker.ReportProgress(progress, "Initializing " + name);
 
                 TextFieldParser parser = new TextFieldParser(group.FilePath);
                 parser.TextFieldType = FieldType.Delimited;
                 parser.SetDelimiters(";");
                 bool firstLine = true;
-                string[] row = { };
-                string[] columnNames = { };
+                string[]? row = { };
+                string[]? columnNames = { };
 
                 List<HourlyConsumption> schedule = new List<HourlyConsumption>(); // holds every hour
 
@@ -388,11 +417,21 @@ namespace EC_Simulation
                     if (firstLine) // get column names
                     {
                         columnNames = parser.ReadFields();
+                        if(columnNames == null || columnNames.Length==0)
+                        {
+                            e.Cancel = true;
+                            NullRowFoundEventHandler?.Invoke(this, "Consumer(Error: Column Names)");
+                        }
                         firstLine = false;
                         continue;
                     }
                     row = parser.ReadFields();
-                    for (int i = 0; i < row.Length; i++) //checks if columns has empty data
+                    if (row == null || row.Length == 0)
+                    {
+                        e.Cancel = true;
+                        NullRowFoundEventHandler?.Invoke(this, "Consumer");
+                    }
+                    for (int i = 0; i < row!.Length; i++) //checks if columns has empty data
                     {
                         if (row[i] == "")
                         {
@@ -404,13 +443,13 @@ namespace EC_Simulation
                     List<ConsumeValue> consumeValuePair = new List<ConsumeValue>();
                     for (int i = 1; i < row.Length; i++) //get every value and column name
                     {
-                        consumeValuePair.Add(new ConsumeValue(columnNames[i], float.Parse(row[i], CultureInfo.InvariantCulture)));
+                        consumeValuePair.Add(new ConsumeValue(columnNames![i], float.Parse(row[i], CultureInfo.InvariantCulture)));
                     }
                     schedule.Add(new HourlyConsumption(date, consumeValuePair));
                 }
                 consumerInitializerBackgroundWorker.ReportProgress(progress,$"Number of Lines readed:{numbOfLines}");
                 string columns  = "";
-                for(int i =0; i< columnNames.Length; i++)
+                for(int i =0; i< columnNames!.Length; i++)
                 {
                     columns += columnNames[i] + ",";
                 }
@@ -423,7 +462,7 @@ namespace EC_Simulation
                 parser.Close();
             }
         }
-        private void consumerInitializerBackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        private void consumerInitializerBackgroundWorker_ProgressChanged(object? sender, ProgressChangedEventArgs e)
         {
             if(e.UserState != null)
             {
@@ -431,7 +470,7 @@ namespace EC_Simulation
             }
             
         }
-        private void consumerInitializerBackgroundWorker_RunWorkCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void consumerInitializerBackgroundWorker_RunWorkCompleted(object? sender, RunWorkerCompletedEventArgs e)
         {
             simTextBox.AppendText("Consumer initiation complete!" + Environment.NewLine);
             mainBackgroundWorker.RunWorkerAsync();

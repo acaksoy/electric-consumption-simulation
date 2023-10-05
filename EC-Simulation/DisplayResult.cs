@@ -144,14 +144,6 @@ namespace EC_Simulation
                     return;
                 }
             }
-            /*foreach (KeyValuePair<CheckBox, Series> csPair in checkboxSeriesPair)
-            {
-                if (cb == csPair.Key)
-                {
-                    csPair.Value.Enabled = cb.Checked;
-                    return;
-                }
-            }*/
         }
 
         private void ComboBox_Selected(object sender, EventArgs e)
@@ -183,6 +175,8 @@ namespace EC_Simulation
                     switch (button.Tag)
                     {
                         case "Hourly":
+                            if (chartTuple.Item3.Name == "Power Storage") chartTuple.Item2.Name = "Power Storage";
+
                             chart1.ChartAreas[0].AxisX.Title = "Hours";
                             chartTuple.Item2.ChartType = SeriesChartType.Spline;
                             chart1.ChartAreas[0].AxisX.IntervalType = DateTimeIntervalType.Auto;
@@ -195,23 +189,45 @@ namespace EC_Simulation
                             break;
 
                         case "Daily":
+
                             chart1.ChartAreas[0].AxisX.Title = "Days";
                             chartTuple.Item2.ChartType = SeriesChartType.Spline;
                             chart1.ChartAreas[0].AxisX.IntervalType = DateTimeIntervalType.Auto;
                             chart1.ChartAreas[0].AxisX.ScaleView.Zoom(0, 31);
                             DateTime currentDay = records[0].results.Keys.First<DateTime>();
                             double dailyValue = 0;
-                            foreach (KeyValuePair<DateTime, double> result in chartTuple.Item3.results)
+                            if (chartTuple.Item3.Name == "Power Storage")
                             {
-                                if (currentDay.Day == result.Key.Day)
+                                chartTuple.Item2.Name = "Maximum amount of stored power";
+   
+                                foreach (KeyValuePair<DateTime, double> result in chartTuple.Item3.results)
                                 {
-                                    dailyValue += result.Value;
+                                    if (currentDay.Day == result.Key.Day)
+                                    {
+                                        dailyValue = Math.Max(dailyValue, result.Value);
+                                    }
+                                    else
+                                    {
+                                        chartTuple.Item2.Points.AddXY(currentDay.ToShortDateString(), dailyValue);
+                                        currentDay = currentDay.AddDays(1);
+                                        dailyValue = result.Value;
+                                    }
                                 }
-                                else
+                            }
+                            else
+                            {
+                                foreach (KeyValuePair<DateTime, double> result in chartTuple.Item3.results)
                                 {
-                                    chartTuple.Item2.Points.AddXY(currentDay.ToShortDateString(), dailyValue);
-                                    currentDay = currentDay.AddDays(1);
-                                    dailyValue = result.Value;
+                                    if (currentDay.Day == result.Key.Day)
+                                    {
+                                        dailyValue += result.Value;
+                                    }
+                                    else
+                                    {
+                                        chartTuple.Item2.Points.AddXY(currentDay.ToShortDateString(), dailyValue);
+                                        currentDay = currentDay.AddDays(1);
+                                        dailyValue = result.Value;
+                                    }
                                 }
                             }
                             chartTuple.Item2.Points.AddXY(currentDay.ToShortDateString(), dailyValue);
@@ -224,22 +240,45 @@ namespace EC_Simulation
                             chart1.ChartAreas[0].AxisX.ScaleView.Zoom(0, 12);
                             DateTime currentMonth = records[0].results.Keys.First<DateTime>();
                             double monthlyValue = 0;
-                            foreach (KeyValuePair<DateTime, double> result in chartTuple.Item3.results)
+                            if (chartTuple.Item3.Name == "Power Storage")
                             {
-                                if (currentMonth.Month == result.Key.Month)
+                                chartTuple.Item2.Name = "Maximum amount of stored power";
+                                foreach (KeyValuePair<DateTime, double> result in chartTuple.Item3.results)
                                 {
-                                    monthlyValue += result.Value;
-                                }
-                                else
-                                {
+                                    if (currentMonth.Month == result.Key.Month)
+                                    {
+                                        monthlyValue = Math.Max(monthlyValue, result.Value);
+                                    }
+                                    else
+                                    {
 
-                                    chartTuple.Item2.Points.AddXY(currentMonth.ToShortDateString(), monthlyValue);
-                                    currentMonth = currentMonth.AddMonths(1);
-                                    monthlyValue = result.Value;
+                                        chartTuple.Item2.Points.AddXY(currentMonth.ToShortDateString(), monthlyValue);
+                                        currentMonth = currentMonth.AddMonths(1);
+                                        monthlyValue = result.Value;
+                                    }
                                 }
+                                chartTuple.Item2.Points.AddXY(currentMonth.ToShortDateString(), monthlyValue);
+                                chart1.ChartAreas[0].RecalculateAxesScale();
                             }
-                            chartTuple.Item2.Points.AddXY(currentMonth.ToShortDateString(), monthlyValue);
-                            chart1.ChartAreas[0].RecalculateAxesScale();
+                            else
+                            {
+                                foreach (KeyValuePair<DateTime, double> result in chartTuple.Item3.results)
+                                {
+                                    if (currentMonth.Month == result.Key.Month)
+                                    {
+                                        monthlyValue += result.Value;
+                                    }
+                                    else
+                                    {
+
+                                        chartTuple.Item2.Points.AddXY(currentMonth.ToShortDateString(), monthlyValue);
+                                        currentMonth = currentMonth.AddMonths(1);
+                                        monthlyValue = result.Value;
+                                    }
+                                }
+                                chartTuple.Item2.Points.AddXY(currentMonth.ToShortDateString(), monthlyValue);
+                                chart1.ChartAreas[0].RecalculateAxesScale();
+                            }
                             break;
                         default:
                             break;

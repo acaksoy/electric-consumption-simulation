@@ -30,7 +30,7 @@ namespace EC_Simulation
             this.hydroSpecs = hydroSpecs;
 
             simulationManager = new SimulationManager(simProgresLabel, simulationProgressBar, loggerTextBox, controls, weatherDataFilePath, eventDataFilePath);
-            simulationManager.NullRowFoundEventHandler += SimulationManager_NullRowFound;
+            simulationManager.NullRowFoundEvent += NullRowFound_EventHandler;
         }
 
         private void Simulator_Shown(object sender, EventArgs e)
@@ -42,7 +42,7 @@ namespace EC_Simulation
             Debug.WriteLine("Simulator stoped.");
         }
 
-        private void SimulationManager_NullRowFound(object? sender, string msg)
+        private void NullRowFound_EventHandler(object? sender, string msg)
         {
             MessageBox.Show($" Failed to initilate {msg}. Please make sure the datasets are in the correct format ");
             this.Close();

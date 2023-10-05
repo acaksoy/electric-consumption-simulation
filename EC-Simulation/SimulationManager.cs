@@ -34,7 +34,7 @@ namespace EC_Simulation
         BackgroundWorker consumerInitializerBackgroundWorker;
         BackgroundWorker calendarInitializerBackgroundWorker;
 
-        public event EventHandler<string> NullRowFoundEventHandler;
+        public event EventHandler<string> NullRowFoundEvent;
 
 
 
@@ -52,6 +52,7 @@ namespace EC_Simulation
         double windTotalProduction = 0;
         double hydroTotalProduction = 0;
         double fosilTotalProduction = 0;
+
 
         public SimulationManager(Label simLabel, ProgressBar simPBar, TextBox simTB, List<ControlGroup> controls, string weatherDataFilePath, string eventDataFilePath) //initilaze icin bilgiler önden yüklenmeli
         {
@@ -78,6 +79,7 @@ namespace EC_Simulation
             records.Add(new Record("Elec. Prod. Fossil"));
             records.Add(new Record("Total Elec. Prod. Renewable"));
             records.Add(new Record("Total Elec. Consumption"));
+            records.Add(new Record("Power Storage"));
 
             mainBackgroundWorker = new BackgroundWorker();
             mainBackgroundWorker.DoWork += mainBackgroundWorker_DoWork;
@@ -111,6 +113,8 @@ namespace EC_Simulation
         {
             int progress = 0;
             int perc = 0;
+
+            double powerStorage = 0;
             
             //Event activeEvent = null;
             foreach (Hour hour in hours)
@@ -223,17 +227,45 @@ namespace EC_Simulation
                     Record cRecord = records.Find(x => x.Name == consumer.name) ?? throw new InvalidOperationException("Record could not be found!");
                     cRecord.RecordResult(hour.Date, consumption);
                 }
+                // -1
+                if (totalPower > totalConsumption) powerStorage += totalPower - totalConsumption;                              
+                // -1
                 if (totalConsumption > totalPower)
                 {
-                    if (fosilProductionActive)
+                    double tempTotalCon = totalConsumption;
+                    // -2
+                    tempTotalCon -= totalPower;
+                    if(tempTotalCon > 0)
+                    {
+                        if(tempTotalCon >= powerStorage) 
+                        {
+                            tempTotalCon -= powerStorage;
+                            powerStorage = 0;
+                            if (fosilProductionActive)
+                            {
+                                fossilProduction = tempTotalCon; // totalConsumption - totalPower;
+                            }
+                        }
+                        else
+                        {
+                            powerStorage = powerStorage - tempTotalCon;
+                            tempTotalCon = 0;
+                        }                       
+                    }
+                    if (tempTotalCon < 0) { tempTotalCon = 0; }
+
+                    //-2
+                    /*if (fosilProductionActive)
                     {
                         fossilProduction = totalConsumption - totalPower;
-                    }
+                    }*/
                 }
                 Record tecRecord = records.Find(x => x.Name == "Total Elec. Consumption") ?? throw new InvalidOperationException("Record could not be found!");
                 tecRecord.RecordResult(hour.Date, totalConsumption);
                 Record fRecord = records.Find(x => x.Name == "Elec. Prod. Fossil") ?? throw new InvalidOperationException("Record could not be found!");
                 fRecord.RecordResult(hour.Date, fossilProduction);
+                Record sRecord = records.Find(x => x.Name == "Power Storage") ?? throw new InvalidOperationException("Record could not be found!");
+                sRecord.RecordResult(hour.Date, powerStorage);
 
                 progress++;
                 perc = (int)(100 * progress / hours.Count);
@@ -304,7 +336,7 @@ namespace EC_Simulation
                 if(rowEvent == null || rowEvent.Length == 0)
                 {
                     e.Cancel = true;
-                    NullRowFoundEventHandler?.Invoke(this, "Random Events");
+                    NullRowFoundEvent?.Invoke(this, "Random Events");
                     
                 }              
 
@@ -354,7 +386,7 @@ namespace EC_Simulation
                 if(row == null || row.Length == 0)
                 {
                     e.Cancel = true;
-                    NullRowFoundEventHandler?.Invoke(this, "Weather Data");
+                    NullRowFoundEvent?.Invoke(this, "Weather Data");
                 }
                 for (int i = 0; i < row!.Length; i++) //checks if columns has empty data
                 {
@@ -420,7 +452,7 @@ namespace EC_Simulation
                         if(columnNames == null || columnNames.Length==0)
                         {
                             e.Cancel = true;
-                            NullRowFoundEventHandler?.Invoke(this, "Consumer(Error: Column Names)");
+                            NullRowFoundEvent?.Invoke(this, "Consumer(Error: Column Names)");
                         }
                         firstLine = false;
                         continue;
@@ -429,7 +461,7 @@ namespace EC_Simulation
                     if (row == null || row.Length == 0)
                     {
                         e.Cancel = true;
-                        NullRowFoundEventHandler?.Invoke(this, "Consumer");
+                        NullRowFoundEvent?.Invoke(this, "Consumer");
                     }
                     for (int i = 0; i < row!.Length; i++) //checks if columns has empty data
                     {

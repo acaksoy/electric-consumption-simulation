@@ -39,7 +39,7 @@ namespace EC_Simulation
         }
         private void importData_Click(object sender, EventArgs e)
         {
-            Button button = sender as Button;
+            Button button = sender as Button ?? throw new InvalidCastException("Invalid Cast at importData_Click");
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
                 openFileDialog.InitialDirectory = "c:\\";

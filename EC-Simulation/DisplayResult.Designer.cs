@@ -53,6 +53,7 @@
             yearlyTotalProductionLabel = new Label();
             yearlyTotalConsumptionLabel = new Label();
             selectedYearlyTotal = new Label();
+            checkBox1 = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)DataGridView1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)chart1).BeginInit();
             SuspendLayout();
@@ -314,11 +315,24 @@
             selectedYearlyTotal.TabIndex = 22;
             selectedYearlyTotal.Text = "Selected Record Annual Total:";
             // 
+            // checkBox1
+            // 
+            checkBox1.AutoSize = true;
+            checkBox1.Location = new Point(459, 754);
+            checkBox1.Name = "checkBox1";
+            checkBox1.Size = new Size(83, 19);
+            checkBox1.TabIndex = 23;
+            checkBox1.Tag = "Consumption";
+            checkBox1.Text = "checkBox9";
+            checkBox1.UseVisualStyleBackColor = true;
+            checkBox1.CheckedChanged += CheckBox_Checked;
+            // 
             // DisplayResult
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1655, 786);
+            Controls.Add(checkBox1);
             Controls.Add(selectedYearlyTotal);
             Controls.Add(yearlyTotalConsumptionLabel);
             Controls.Add(yearlyTotalProductionLabel);
@@ -376,5 +390,6 @@
         private Label yearlyTotalProductionLabel;
         private Label yearlyTotalConsumptionLabel;
         private Label selectedYearlyTotal;
+        private CheckBox checkBox1;
     }
 }

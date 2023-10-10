@@ -44,8 +44,9 @@ namespace EC_Simulation
 
         private void NullRowFound_EventHandler(object? sender, string msg)
         {
-            MessageBox.Show($" Failed to initilate {msg}. Please make sure the datasets are in the correct format ");
-            this.Close();
+
+            MessageBox.Show(msg,"Error",MessageBoxButtons.OK, MessageBoxIcon.Error);
+            this.Invoke(new Action(() => this.Close()));
 
         }
         

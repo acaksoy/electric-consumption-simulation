@@ -16,7 +16,7 @@ namespace EC_Simulation
     {
         private SimulationManager simulationManager;
 
-        private List<ControlGroup> controls;
+        //private List<ControlGroup> controls;
         private SolarPanelSpecs solarSpecs;
         private WindTurbineSpecs windSpecs;
         private HydroTurbineSpecs hydroSpecs;
@@ -24,7 +24,7 @@ namespace EC_Simulation
         public Simulator(List<ControlGroup> controls, SolarPanelSpecs solarSpecs, WindTurbineSpecs windSpecs, HydroTurbineSpecs hydroSpecs, string weatherDataFilePath, string eventDataFilePath)
         {
             InitializeComponent();
-            this.controls = controls;
+            //this.controls = controls;
             this.solarSpecs = solarSpecs;
             this.windSpecs = windSpecs;
             this.hydroSpecs = hydroSpecs;
@@ -35,9 +35,9 @@ namespace EC_Simulation
 
         private void Simulator_Shown(object sender, EventArgs e)
         {
-            simulationManager.InitilazieSolarPanels(solarSpecs.Amount, solarSpecs.Efficiency, solarSpecs.Area, solarSpecs.Noct, solarSpecs.TempCoefficient);
-            simulationManager.InitilazieWindTurbines(windSpecs.Amount, windSpecs.BladeArea, windSpecs.PowerCoefficent, windSpecs.Availablity);
-            simulationManager.InitilazieHydroPowerPlanets(hydroSpecs.Amount, hydroSpecs.Height, hydroSpecs.Efficiency);
+            simulationManager.InitializeSolarPanels(solarSpecs.Amount, solarSpecs.Efficiency, solarSpecs.Area, solarSpecs.Noct, solarSpecs.TempCoefficient);
+            simulationManager.InitializeWindTurbines(windSpecs.Amount, windSpecs.BladeArea, windSpecs.PowerCoefficent, windSpecs.Availablity);
+            simulationManager.InitializeHydroPowerPlants(hydroSpecs.Amount, hydroSpecs.Height, hydroSpecs.Efficiency);
             simulationManager.Simulate();
             Debug.WriteLine("Simulator stoped.");
         }

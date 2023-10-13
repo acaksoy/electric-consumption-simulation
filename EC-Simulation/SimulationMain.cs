@@ -14,8 +14,6 @@ namespace EC_Simulation
 
     public partial class SimulationMain : Form
     {
-        //private SimulationManager simulationManager = new SimulationManager();
-
 
         private ErrorProvider errorProvider1;
 
@@ -79,7 +77,7 @@ namespace EC_Simulation
         private void validateTextBox_float(object sender, CancelEventArgs e)
         {
 
-            TextBox tb = (TextBox)sender;
+            TextBox tb = (TextBox)sender ?? throw new InvalidCastException("Invalid Cast at importData_Click"); ;
             float value;
             bool parseSuccess = float.TryParse(tb.Text, out value);
             if (String.IsNullOrEmpty(tb.Text) || !parseSuccess)
@@ -89,11 +87,11 @@ namespace EC_Simulation
                 return;
             }
 
-            errorProvider1.SetError(tb, String.Empty);
+            errorProvider1.SetError(tb, String.Empty); //remove error if value is float
         }
         private void validateTextBox_int(object sender, CancelEventArgs e)
         {
-            TextBox tb = (TextBox)sender;
+            TextBox tb = (TextBox)sender ?? throw new InvalidCastException("Invalid Cast at importData_Click"); ;
             int value;
             bool parseSuccess = int.TryParse(tb.Text, out value);
             if (String.IsNullOrEmpty(tb.Text) || !parseSuccess)

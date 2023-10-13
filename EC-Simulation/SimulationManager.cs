@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.ComponentModel.Com2Interop;
 using System.Windows.Forms.DataVisualization.Charting;
+using System.Xml.Linq;
 
 namespace EC_Simulation
 {
@@ -26,8 +27,7 @@ namespace EC_Simulation
 
         private List<ElectricityConsumer> allconsumers { get; set; }
 
-        //private List<Record> productionRecords = new List<Record>();
-        //private List<Record> consumptionRecords = new List<Record>();
+
         private List<Record> records = new List<Record>();
 
 
@@ -72,10 +72,6 @@ namespace EC_Simulation
             hydroPowerPlants = new List<HydroPowerPlant>();
             allconsumers = new List<ElectricityConsumer>();
 
-            /*productionRecords.Add(new Record("Fosil resources"));
-            productionRecords.Add(new Record("Total Production"));
-            consumptionRecords.Add(new Record("Total Consumption"));*/
-
 
             records.Add(new Record("Elec. Prod. Fossil"));
             records.Add(new Record("Total Elec. Prod. Renewable"));
@@ -117,7 +113,6 @@ namespace EC_Simulation
 
             double powerStorage = 0;
             
-            //Event activeEvent = null;
             foreach (Hour hour in hours)
             {
                 double solarElecGenTotal = 0;
@@ -130,7 +125,6 @@ namespace EC_Simulation
 
                 bool fosilProductionActive = true;
 
-                Debug.WriteLine($"weather: temp: {hour.Temperature}, solarirr: {hour.SolarIrradiance}");
                 List<Event> activeEvents = new List<Event>();
                 DateOnly date = DateOnly.FromDateTime(hour.Date);
                 TimeOnly time = TimeOnly.FromDateTime(hour.Date);
@@ -169,14 +163,6 @@ namespace EC_Simulation
 
                     }
                 }
-
-                /*foreach(Event ev in activeEvents)
-                {
-                    if(ev.EffectedUnitName == "Fosil" && ev.EffectValue == 0)
-                    {
-                        fosilProductionActive = false;
-                    }
-                }*/
                 
                 foreach (SolarPanel panel in solarPanels)
                 {
@@ -187,7 +173,6 @@ namespace EC_Simulation
                 Record spRecord = records.Find(x => x.Name == "Solar panels") ?? throw new InvalidOperationException("Record could not be found!");
                 spRecord.RecordResult(hour.Date, solarElecGenTotal);
 
-                solarTotalProduction += solarElecGenTotal;//test
                 
                 foreach (WindTurbine wind in windTurbines)
                 {
@@ -196,7 +181,6 @@ namespace EC_Simulation
 
                 Record wtRecord = records.Find(x => x.Name == "Wind turbines") ?? throw new InvalidOperationException("Record could not be found!");
                 wtRecord.RecordResult(hour.Date, windElecGenTotal);
-                windTotalProduction += windElecGenTotal;//test
 
                 foreach (HydroPowerPlant hydro in hydroPowerPlants)
                 {
@@ -205,13 +189,11 @@ namespace EC_Simulation
 
                 Record hppRecord = records.Find(x => x.Name == "Hydropower plants") ?? throw new InvalidOperationException("Record could not be found!");
                 hppRecord.RecordResult(hour.Date, hydroElecGenTotal);
-                hydroTotalProduction += hydroElecGenTotal;//test
 
                 totalPower = solarElecGenTotal + windElecGenTotal + hydroElecGenTotal;
 
                 Record teprRecord = records.Find(x => x.Name == "Total Elec. Prod. Renewable") ?? throw new InvalidOperationException("Record could not be found!");
                 teprRecord.RecordResult(hour.Date, totalPower);
-                totalProduction += totalPower;//test
 
 
                 foreach (ElectricityConsumer consumer in allconsumers)
@@ -228,13 +210,13 @@ namespace EC_Simulation
                     Record cRecord = records.Find(x => x.Name == consumer.name) ?? throw new InvalidOperationException("Record could not be found!");
                     cRecord.RecordResult(hour.Date, consumption);
                 }
-                // -1
+
                 if (totalPower > totalConsumption) powerStorage += totalPower - totalConsumption;                              
-                // -1
+
                 if (totalConsumption > totalPower)
                 {
                     double tempTotalCon = totalConsumption;
-                    // -2
+
                     tempTotalCon -= totalPower;
                     if(tempTotalCon > 0)
                     {
@@ -244,7 +226,7 @@ namespace EC_Simulation
                             powerStorage = 0;
                             if (fosilProductionActive)
                             {
-                                fossilProduction = tempTotalCon; // totalConsumption - totalPower;
+                                fossilProduction = tempTotalCon; 
                             }
                         }
                         else
@@ -255,11 +237,6 @@ namespace EC_Simulation
                     }
                     if (tempTotalCon < 0) { tempTotalCon = 0; }
 
-                    //-2
-                    /*if (fosilProductionActive)
-                    {
-                        fossilProduction = totalConsumption - totalPower;
-                    }*/
                 }
                 Record tecRecord = records.Find(x => x.Name == "Total Elec. Consumption") ?? throw new InvalidOperationException("Record could not be found!");
                 tecRecord.RecordResult(hour.Date, totalConsumption);
@@ -282,15 +259,6 @@ namespace EC_Simulation
         {
             simProgresBar.Value = e.ProgressPercentage;
             simProgresLabel.Text = "Simulating... %" + e.ProgressPercentage.ToString();
-            /*if (e.UserState != null)
-            {
-                List<string> messages = e.UserState as List<string>;                              
-                for(int i=0; i< messages.Count; i++)
-                {
-                    simTextBox.AppendText(messages[i] + Environment.NewLine);
-                }
-                
-            }*/
         }
         private void mainBackgroundWorker_RunWorkCompleted(object? sender, RunWorkerCompletedEventArgs e)
         {
@@ -317,183 +285,187 @@ namespace EC_Simulation
         private void calendarInitializerBackgroundWorker_DoWork(object? sender, DoWorkEventArgs e)
         {
             
-            int progress = 0;
-            int counter = 0;
-            int lineCount = File.ReadLines(eventDataFilePath).Count();
-            calendarInitializerBackgroundWorker.ReportProgress(progress, "Starting to initialize events.");
-
-            TextFieldParser parserEvent = new TextFieldParser(eventDataFilePath);
-            parserEvent.TextFieldType = FieldType.Delimited;
-            parserEvent.SetDelimiters(";");
-
-            string[]? headersRE = parserEvent.ReadFields(); // passing first row //100
-            if (headersRE == null || headersRE.Length != 9)
+            try
             {
-                e.Cancel = true;
-                NullRowFoundEvent?.Invoke(this, "Random Events file has incorrect Format.Number of headers must be 9!");
-                return;
-            } 
+                int progress = 0;
+                int counter = 0;
+                int lineCount = File.ReadLines(eventDataFilePath).Count();
+                calendarInitializerBackgroundWorker.ReportProgress(progress, "Starting to initialize events.");
 
-            string[]? rowEvent = { };
-            while (!parserEvent.EndOfData)
-            {
-                counter++;
-                progress = (int)100 * counter / lineCount;
+                TextFieldParser parserEvent = new TextFieldParser(eventDataFilePath);
+                parserEvent.TextFieldType = FieldType.Delimited;
+                parserEvent.SetDelimiters(";");
 
-                rowEvent = parserEvent.ReadFields();
-                if(rowEvent == null || rowEvent.Length == 0) // 101
+                string[]? headersRE = parserEvent.ReadFields();
+                if (headersRE == null || headersRE.Length != 9)
                 {
                     e.Cancel = true;
-                    NullRowFoundEvent?.Invoke(this, "Random Events file has incorrect Format. The rows are either empty or null!");
+                    NullRowFoundEvent?.Invoke(this, "Random Events file has incorrect Format.Number of headers must be 9!");
                     return;
-                }              
+                }
 
-                /*for (int i = 0; i < rowEvent!.Length; i++) //checks if columns has empty data : 102
+                string[]? rowEvent = { };
+                while (!parserEvent.EndOfData)
                 {
-                    if (rowEvent[i] == "")
+                    counter++;
+                    progress = (int)100 * counter / lineCount;
+
+                    rowEvent = parserEvent.ReadFields();
+                    if (rowEvent == null || rowEvent.Length == 0)
                     {
                         e.Cancel = true;
-                        NullRowFoundEvent?.Invoke(this, "Random Events file has incorrect Format. there  are either empty or null values in row!");
-                        break;
+                        NullRowFoundEvent?.Invoke(this, "Random Events file has incorrect Format. The rows are either empty or null!");
+                        return;
                     }
-                }*/
-                //103
-                
-                string name = rowEvent[0];
-                string description = rowEvent[1];
 
-                DateOnly startDate;
-                if(!DateOnly.TryParseExact(rowEvent[2], "dd.MM.yyyy", out startDate))
-                {
-                    e.Cancel = true;
-                    NullRowFoundEvent?.Invoke(this, "Random Events file has incorrect Format. The start date could not be parsed. Make sure the format is dd.MM.yyyy !");
-                    return;
-                }
-                DateOnly endDate;
-                if (!DateOnly.TryParseExact(rowEvent[3], "dd.MM.yyyy", out endDate))
-                {
-                    e.Cancel = true;
-                    NullRowFoundEvent?.Invoke(this, "Random Events file has incorrect Format. The end date could not be parsed. Make sure the format is dd.MM.yyyy !");
-                    return;
-                }
-                TimeOnly startHour;
-                if(!TimeOnly.TryParseExact(rowEvent[4], "HH:mm", out startHour))
-                {
-                    e.Cancel = true;
-                    NullRowFoundEvent?.Invoke(this, "Random Events file has incorrect Format. The start hour could not be parsed. Make sure the format is HH:mm !");
-                    return;
-                }
-                TimeOnly endHour;
-                if (!TimeOnly.TryParseExact(rowEvent[5], "HH:mm", out endHour))
-                {
-                    e.Cancel = true;
-                    NullRowFoundEvent?.Invoke(this, "Random Events file has incorrect Format. The end hour could not be parsed. Make sure the format is HH:mm !");
-                    return;
-                }
-                string effectedClass = rowEvent[6];
-                string effectedUnitTag = rowEvent[7];
-                float effectValue;
-                if(!float.TryParse(rowEvent[8], NumberStyles.Float ,CultureInfo.InvariantCulture, out effectValue))
-                {
-                    e.Cancel = true;
-                    NullRowFoundEvent?.Invoke(this, "Random Events file has incorrect Format. The effect value could not be parsed. Make sure the value is a floating point number !");
-                    return;
-                }
-                //103
-                events.Add(new Event(startDate, endDate, startHour, endHour, name, description, effectedClass ,effectedUnitTag ,effectValue));
 
-                if (progress % 25 == 0)
-                {
-                    calendarInitializerBackgroundWorker.ReportProgress(progress);
+                    string name = rowEvent[0];
+                    string description = rowEvent[1];
+
+                    DateOnly startDate;
+                    if (!DateOnly.TryParseExact(rowEvent[2], "dd.MM.yyyy", out startDate))
+                    {
+                        e.Cancel = true;
+                        NullRowFoundEvent?.Invoke(this, "Random Events file has incorrect Format. The start date could not be parsed. Make sure the format is dd.MM.yyyy !");
+                        return;
+                    }
+                    DateOnly endDate;
+                    if (!DateOnly.TryParseExact(rowEvent[3], "dd.MM.yyyy", out endDate))
+                    {
+                        e.Cancel = true;
+                        NullRowFoundEvent?.Invoke(this, "Random Events file has incorrect Format. The end date could not be parsed. Make sure the format is dd.MM.yyyy !");
+                        return;
+                    }
+                    TimeOnly startHour;
+                    if (!TimeOnly.TryParseExact(rowEvent[4], "HH:mm", out startHour))
+                    {
+                        e.Cancel = true;
+                        NullRowFoundEvent?.Invoke(this, "Random Events file has incorrect Format. The start hour could not be parsed. Make sure the format is HH:mm !");
+                        return;
+                    }
+                    TimeOnly endHour;
+                    if (!TimeOnly.TryParseExact(rowEvent[5], "HH:mm", out endHour))
+                    {
+                        e.Cancel = true;
+                        NullRowFoundEvent?.Invoke(this, "Random Events file has incorrect Format. The end hour could not be parsed. Make sure the format is HH:mm !");
+                        return;
+                    }
+                    string effectedClass = rowEvent[6];
+                    string effectedUnitTag = rowEvent[7];
+                    float effectValue;
+                    if (!float.TryParse(rowEvent[8], NumberStyles.Float, CultureInfo.InvariantCulture, out effectValue))
+                    {
+                        e.Cancel = true;
+                        NullRowFoundEvent?.Invoke(this, "Random Events file has incorrect Format. The effect value could not be parsed. Make sure the value is a floating point number !");
+                        return;
+                    }
+
+                    events.Add(new Event(startDate, endDate, startHour, endHour, name, description, effectedClass, effectedUnitTag, effectValue));
+
+                    if (progress % 25 == 0)
+                    {
+                        calendarInitializerBackgroundWorker.ReportProgress(progress);
+                    }
                 }
+                parserEvent.Close();
             }
-            parserEvent.Close();
-
-            progress = 0;
-            counter = 0;
-            lineCount = File.ReadLines(weatherDataFilePath).Count();
-            calendarInitializerBackgroundWorker.ReportProgress(progress, "Starting to initialize calendar.");
-
-            TextFieldParser parser = new TextFieldParser(weatherDataFilePath);
-            parser.TextFieldType = FieldType.Delimited;
-            parser.SetDelimiters(";");
-
-            string[]? headersWeather = parser.ReadFields(); // passing first row //100
-            if (headersWeather == null || headersWeather.Length != 6)
-            {
+            catch(IOException ex)
+            {               
                 e.Cancel = true;
-                NullRowFoundEvent?.Invoke(this, "Weather file has incorrect Format. Number of headers must be 6!");
+                NullRowFoundEvent?.Invoke(this, "Failed to read random event  file. " + ex.Message);
                 return;
             }
-            string[]? row = { };
-            while (!parser.EndOfData)
-            {
-                counter++;
-                progress = (int) 100 * counter / lineCount;
 
-                row = parser.ReadFields();
-                if(row == null || row.Length == 0)
+            try
+            {
+                int progress = 0;
+                int counter = 0;
+                int lineCount = File.ReadLines(weatherDataFilePath).Count();
+                calendarInitializerBackgroundWorker.ReportProgress(progress, "Starting to initialize calendar.");
+
+                TextFieldParser parser = new TextFieldParser(weatherDataFilePath);
+                parser.TextFieldType = FieldType.Delimited;
+                parser.SetDelimiters(";");
+
+                string[]? headersWeather = parser.ReadFields();
+                if (headersWeather == null || headersWeather.Length != 6)
                 {
                     e.Cancel = true;
-                    NullRowFoundEvent?.Invoke(this, "Weather file has incorrect Format. The rows are either empty or null!");
+                    NullRowFoundEvent?.Invoke(this, "Weather file has incorrect Format. Number of headers must be 6!");
                     return;
                 }
-                /*for (int i = 0; i < row!.Length; i++) //checks if columns has empty data
+                string[]? row = { };
+                while (!parser.EndOfData)
                 {
-                    if (row[i] == "")
+                    counter++;
+                    progress = (int)100 * counter / lineCount;
+
+                    row = parser.ReadFields();
+                    if (row == null || row.Length == 0)
                     {
-                        row[i] = "0";
+                        e.Cancel = true;
+                        NullRowFoundEvent?.Invoke(this, "Weather file has incorrect Format. The rows are either empty or null!");
+                        return;
                     }
-                }*/
-                DateTime date; // g = dd.mm.yyyy hh:mm
-                if(!DateTime.TryParseExact(row[0],"g", CultureInfo.CurrentCulture, DateTimeStyles.None,out date))
-                {
-                    e.Cancel = true;
-                    NullRowFoundEvent?.Invoke(this, "Weather file has incorrect Format. Date must be in dd.mm.yyyy hh:mm format!");
-                    return;
+
+                    DateTime date; // g = dd.mm.yyyy hh:mm
+                    if (!DateTime.TryParseExact(row[0], "g", new CultureInfo("de-DE"), DateTimeStyles.None, out date))
+                    {
+                        e.Cancel = true;
+                        NullRowFoundEvent?.Invoke(this, "Weather file has incorrect Format. Date must be in dd.mm.yyyy hh:mm format!");
+                        return;
+                    }
+                    float wind;
+                    if (!float.TryParse(row[1], NumberStyles.Float, CultureInfo.InvariantCulture, out wind))
+                    {
+                        e.Cancel = true;
+                        NullRowFoundEvent?.Invoke(this, "Weather file has incorrect Format. Wind-Speed must be a floating point number!");
+                        return;
+                    }
+                    float globalirr;
+                    if (!float.TryParse(row[2], NumberStyles.Float, CultureInfo.InvariantCulture, out globalirr))
+                    {
+                        e.Cancel = true;
+                        NullRowFoundEvent?.Invoke(this, "Weather file has incorrect Format. Global-Irradiance must be a floating point number!");
+                        return;
+                    }
+                    float temp;
+                    if (!float.TryParse(row[3], NumberStyles.Float, CultureInfo.InvariantCulture, out temp))
+                    {
+                        e.Cancel = true;
+                        NullRowFoundEvent?.Invoke(this, "Weather file has incorrect Format. Temperature must be a floating point number!");
+                        return;
+                    }
+                    float discharge;
+                    if (!float.TryParse(row[4], NumberStyles.Float, CultureInfo.InvariantCulture, out discharge))
+                    {
+                        e.Cancel = true;
+                        NullRowFoundEvent?.Invoke(this, "Weather file has incorrect Format. Discharge must be a floating point number!");
+                        return;
+                    }
+                    float airPress;
+                    if (!float.TryParse(row[5], NumberStyles.Float, CultureInfo.InvariantCulture, out airPress))
+                    {
+                        e.Cancel = true;
+                        NullRowFoundEvent?.Invoke(this, "Weather file has incorrect Format. Air-Pressure must be a floating point number!");
+                        return;
+                    }
+                    hours.Add(new Hour(date, wind, globalirr, temp, discharge, airPress));
+                    if (progress % 10 == 0)
+                    {
+                        calendarInitializerBackgroundWorker.ReportProgress(progress);
+                    }
                 }
-                float wind;
-                if (!float.TryParse(row[1], NumberStyles.Float, CultureInfo.InvariantCulture, out wind))
-                {
-                    e.Cancel = true;
-                    NullRowFoundEvent?.Invoke(this, "Weather file has incorrect Format. Wind-Speed must be a floating point number!");
-                    return;
-                }
-                float globalirr;
-                if (!float.TryParse(row[2], NumberStyles.Float, CultureInfo.InvariantCulture, out globalirr))
-                {
-                    e.Cancel = true;
-                    NullRowFoundEvent?.Invoke(this, "Weather file has incorrect Format. Global-Irradiance must be a floating point number!");
-                    return;
-                }
-                float temp;
-                if (!float.TryParse(row[3], NumberStyles.Float, CultureInfo.InvariantCulture, out temp))
-                {
-                    e.Cancel = true;
-                    NullRowFoundEvent?.Invoke(this, "Weather file has incorrect Format. Temperature must be a floating point number!");
-                    return;
-                }
-                float discharge;
-                if (!float.TryParse(row[4], NumberStyles.Float, CultureInfo.InvariantCulture, out discharge))
-                {
-                    e.Cancel = true;
-                    NullRowFoundEvent?.Invoke(this, "Weather file has incorrect Format. Discharge must be a floating point number!");
-                    return;
-                }
-                float airPress;
-                if (!float.TryParse(row[4], NumberStyles.Float, CultureInfo.InvariantCulture, out airPress))
-                {
-                    e.Cancel = true;
-                    NullRowFoundEvent?.Invoke(this, "Weather file has incorrect Format. Air-Pressure must be a floating point number!");
-                    return;
-                }
-                hours.Add(new Hour(date, wind, globalirr, temp, discharge, airPress));
-                if (progress % 10 == 0)
-                {
-                    calendarInitializerBackgroundWorker.ReportProgress(progress);
-                }
+                parser.Close();
             }
-            parser.Close();           
+            catch (IOException ex) {
+                e.Cancel = true;
+                NullRowFoundEvent?.Invoke(this, "Failed to read weathetr  file. " + ex.Message);
+                return;
+            }
+
+
+                       
         }
         private void calendarInitializerBackgroundWorker_ProgressChanged(object? sender, ProgressChangedEventArgs e)
         {
@@ -517,78 +489,85 @@ namespace EC_Simulation
             int progress = 0;
             int counter = 0;
             consumerInitializerBackgroundWorker.ReportProgress(progress, "Starting to initialize consumers");
-            
-            
-            foreach (ControlGroup group in controls)
+            try
             {
-                counter++;
-                progress = (int)(100*counter / controls.Count);
-
-                string name = group.ImportButton.Tag.ToString() ??  "default";
-                int numbOfLines = 0;
-                consumerInitializerBackgroundWorker.ReportProgress(progress, "Initializing " + name);
-
-                TextFieldParser parser = new TextFieldParser(group.FilePath);
-                parser.TextFieldType = FieldType.Delimited;
-                parser.SetDelimiters(";");
-                string[]? row;
-                string[]? columnNames = parser.ReadFields();
-                if(columnNames == null || columnNames.Length < 2)
+                foreach (ControlGroup group in controls)
                 {
-                    e.Cancel = true;
-                    NullRowFoundEvent?.Invoke(this, $"{name} file has incorrect Format. Number of headers must be minimum 2!");
-                    return;
-                }
+                    counter++;
+                    progress = (int)(100 * counter / controls.Count);
 
-                List<HourlyConsumption> schedule = new List<HourlyConsumption>(); // holds every hour               
-                while (!parser.EndOfData)
-                {
-                    numbOfLines++;
+                    string name = group.ImportButton.Tag.ToString() ?? "default";
+                    int numbOfLines = 0;
+                    consumerInitializerBackgroundWorker.ReportProgress(progress, "Initializing " + name);
 
-                    row = parser.ReadFields();
-                    if (row == null || row.Length == 0)
+                    TextFieldParser parser = new TextFieldParser(group.FilePath);
+                    parser.TextFieldType = FieldType.Delimited;
+                    parser.SetDelimiters(";");
+                    string[]? row;
+                    string[]? columnNames = parser.ReadFields();
+                    if (columnNames == null || columnNames.Length < 2)
                     {
                         e.Cancel = true;
-                        NullRowFoundEvent?.Invoke(this, $"{name} file has incorrect Format. The rows are either empty or null");
+                        NullRowFoundEvent?.Invoke(this, $"{name} file has incorrect Format. Number of headers must be minimum 2!");
                         return;
                     }
-                    DateTime date; // save date
-                    if(!DateTime.TryParseExact(row[0], "g", new CultureInfo("de-DE"), DateTimeStyles.None, out date)) //CultureInfo.CurrentCulture
+
+                    List<HourlyConsumption> schedule = new List<HourlyConsumption>();
+                    while (!parser.EndOfData)
                     {
-                        e.Cancel = true;
-                        NullRowFoundEvent?.Invoke(this, $"{name} file has incorrect Format. Date must be in dd.mm.yyyy hh:mm format!");
-                        return;
-                    }
-                    List<ConsumeValue> consumeValuePair = new List<ConsumeValue>();
-                    float value;
-                    for (int i = 1; i < row.Length; i++) //get every value and column name
-                    {
-                        if (!float.TryParse(row[i], NumberStyles.Float, CultureInfo.InvariantCulture, out value))
+                        numbOfLines++;
+
+                        row = parser.ReadFields();
+                        if (row == null || row.Length == 0)
                         {
                             e.Cancel = true;
-                            NullRowFoundEvent?.Invoke(this, $"{name} file has incorrect Format. {columnNames[i]} values must be a floating point number!");
+                            NullRowFoundEvent?.Invoke(this, $"{name} file has incorrect Format. The rows are either empty or null");
                             return;
                         }
+                        DateTime date; // save date
+                        if (!DateTime.TryParseExact(row[0], "g", new CultureInfo("de-DE"), DateTimeStyles.None, out date)) //CultureInfo.CurrentCulture
+                        {
+                            e.Cancel = true;
+                            NullRowFoundEvent?.Invoke(this, $"{name} file has incorrect Format. Date must be in dd.mm.yyyy hh:mm format!");
+                            return;
+                        }
+                        List<ConsumeValue> consumeValuePair = new List<ConsumeValue>();
+                        float value;
+                        for (int i = 1; i < row.Length; i++) //get every value and column name
+                        {
+                            if (!float.TryParse(row[i], NumberStyles.Float, CultureInfo.InvariantCulture, out value))
+                            {
+                                e.Cancel = true;
+                                NullRowFoundEvent?.Invoke(this, $"{name} file has incorrect Format. {columnNames[i]} values must be a floating point number!");
+                                return;
+                            }
 
-                        consumeValuePair.Add(new ConsumeValue(columnNames[i], value));
+                            consumeValuePair.Add(new ConsumeValue(columnNames[i], value));
+                        }
+                        schedule.Add(new HourlyConsumption(date, consumeValuePair));
                     }
-                    schedule.Add(new HourlyConsumption(date, consumeValuePair));
-                }
 
-                consumerInitializerBackgroundWorker.ReportProgress(progress,$"Number of Lines readed:{numbOfLines}");
-                string columns  = "";
-                for(int i =0; i< columnNames!.Length; i++)
-                {
-                    columns += columnNames[i] + ",";
-                }
-                consumerInitializerBackgroundWorker.ReportProgress(progress, "Column Names: " + columns);
+                    consumerInitializerBackgroundWorker.ReportProgress(progress, $"Number of Lines readed:{numbOfLines}");
+                    string columns = "";
+                    for (int i = 0; i < columnNames!.Length; i++)
+                    {
+                        columns += columnNames[i] + ",";
+                    }
+                    consumerInitializerBackgroundWorker.ReportProgress(progress, "Column Names: " + columns);
 
-                allconsumers.Add(new ElectricityConsumer(name, int.Parse(group.Amount.Text), schedule));
-                //consumptionRecords.Add(new Record(name));
-                records.Add(new Record(name));
-                consumerInitializerBackgroundWorker.ReportProgress(progress, "Initializing " + name + "complete.");
-                parser.Close();
+                    allconsumers.Add(new ElectricityConsumer(name, int.Parse(group.Amount.Text), schedule));
+                    records.Add(new Record(name));
+                    consumerInitializerBackgroundWorker.ReportProgress(progress, "Initializing " + name + "complete.");
+                    parser.Close();
+                }
             }
+            catch(Exception ex)
+            {
+                e.Cancel = true;
+                NullRowFoundEvent?.Invoke(this, " One of the files containing consumption plans could not be read  " + ex.Message);
+                return;
+            }
+            
         }
         private void consumerInitializerBackgroundWorker_ProgressChanged(object? sender, ProgressChangedEventArgs e)
         {
@@ -608,110 +587,30 @@ namespace EC_Simulation
 
         }
 
-        public void InitilazieSolarPanels(int amount, float efficiency, float area, float noct, float tempCoefficient)
+        public void InitializeSolarPanels(int amount, float efficiency, float area, float noct, float tempCoefficient)
         {
             for (var i = 0; i < amount; i++)
             {
                 solarPanels.Add(new SolarPanel(efficiency, area, noct, tempCoefficient));
             }
-            //productionRecords.Add(new Record("Solar panels"));
             records.Add(new Record("Solar panels"));
         }
-        public void InitilazieWindTurbines(int amount, float bladeArea, float powerCoefficent, float availablity)
+        public void InitializeWindTurbines(int amount, float bladeArea, float powerCoefficent, float availablity)
         {
             for (var i = 0; i < amount; i++)
             {
                 windTurbines.Add(new WindTurbine(bladeArea, powerCoefficent, availablity));
             }
-            //productionRecords.Add(new Record("Wind turbines"));
             records.Add(new Record("Wind turbines"));
         }
-        public void InitilazieHydroPowerPlanets(int amount, float height, float efficiency)
+        public void InitializeHydroPowerPlants(int amount, float height, float efficiency)
         {
             for (var i = 0; i < amount; i++)
             {
                 hydroPowerPlants.Add(new HydroPowerPlant(height, efficiency));
             }
-            //productionRecords.Add(new Record("Hydropower plants"));
             records.Add(new Record("Hydropower plants"));
         }
-        /*public void FillCalendar(string filePath) // control data
-        {
-            
-            TextFieldParser parser = new TextFieldParser(filePath);
-            parser.TextFieldType = FieldType.Delimited;
-            parser.SetDelimiters(";");
-
-            parser.ReadLine(); // passing first row
-            string[] row = { };
-            while (!parser.EndOfData)
-            {
-
-                row = parser.ReadFields();
-                for (int i = 0; i < row.Length; i++) //checks if columns has empty data
-                {
-                    if (row[i] == "")
-                    {
-                        row[i] = "0";
-                    }
-                }
-                DateTime date = DateTime.ParseExact(row[0], "g", CultureInfo.CurrentCulture); // g = dd.mm.yyyy hh:mm
-                hours.Add(new Hour(date, float.Parse(row[1], CultureInfo.InvariantCulture), float.Parse(row[2], CultureInfo.InvariantCulture), float.Parse(row[3], CultureInfo.InvariantCulture), float.Parse(row[4], CultureInfo.InvariantCulture), float.Parse(row[5], CultureInfo.InvariantCulture)));
-
-            }
-            parser.Close();
-            simTextBox.AppendText("Filled calendar..." + Environment.NewLine);
-        }*/
-        /*public void FillConsumer(List<ControlGroup> contorls) // string filePath
-        {
-            foreach(ControlGroup group in contorls)
-            {
-                TextFieldParser parser = new TextFieldParser(group.FilePath);
-                parser.TextFieldType = FieldType.Delimited;
-                parser.SetDelimiters(";");
-                bool firstLine = true;
-                string[] row = { };
-                string[] columnNames = { };
-
-
-                List<HourlyConsumption> schedule = new List<HourlyConsumption>(); // holds every hour
-
-                while (!parser.EndOfData)
-                {
-                    if (firstLine) // get column names
-                    {
-                        columnNames = parser.ReadFields();
-                        firstLine = false;
-                        continue;
-                    }
-                    row = parser.ReadFields();
-                    for (int i = 0; i < row.Length; i++) //checks if columns has empty data
-                    {
-                        if (row[i] == "")
-                        {
-                            row[i] = "0";
-                        }
-
-                    }
-                    DateTime date = DateTime.ParseExact(row[0], "g", CultureInfo.CurrentCulture); // save date
-                    List<ConsumeValue> consumeValuePair = new List<ConsumeValue>();
-                    for (int i = 1; i < row.Length; i++) //get every value and column name
-                    {
-                        consumeValuePair.Add(new ConsumeValue(columnNames[i], float.Parse(row[i], CultureInfo.InvariantCulture)));
-                    }
-                    schedule.Add(new HourlyConsumption(date, consumeValuePair));
-                }
-                string name = "default";
-                if(group.ImportButton.Tag != null)
-                {
-                    name = group.ImportButton.Tag.ToString();
-                }
-                allconsumers.Add(new ElectricityConsumer(name, int.Parse(group.Amount.Text), schedule));
-
-                parser.Close();
-            }
-            
-        }*/
 
     }
 }

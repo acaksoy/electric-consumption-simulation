@@ -26,7 +26,7 @@ namespace SimulationClassLibrary
         public override float ProduceElectricity(Hour hour)
         {
             // Wenn die Windgeschwindigkeit zu hoch oder zu niedrig ist, produziert keine Strom.
-            if (hour.WindSpeed < 3f || hour.WindSpeed > 25) return 0;
+            if (hour.WindSpeed < 2.5f || hour.WindSpeed > 28) return 0;
 
             // Luftdichte berechnen.
             airDenstiy = hour.AirPressure*100 / (gasConstatn * (hour.Temperature + kelvin));

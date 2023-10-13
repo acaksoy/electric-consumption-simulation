@@ -17,23 +17,18 @@ namespace EC_Simulation
 {
     public partial class DisplayResult : Form
     {
-        //List<Record> productionRecords = null;
-        //List<Record> consumptionRecords = null;
-        List<Record> records = new List<Record>(); //=null;
+
+        List<Record> records = new List<Record>();
         Dictionary<int, Record> indexRecordPairs = new Dictionary<int, Record>();
-        int totalProductionIndex = 0;
-        int totalConsumptionIndex = 0;
 
         double yearlyTotalProduction = 0;
         double yearlyTotalConsumption = 0;
 
-        Dictionary<CheckBox, Series> checkboxSeriesPair = new Dictionary<CheckBox, Series>();
         List<Tuple<CheckBox, Series, Record>> chartTupleList = new List<Tuple<CheckBox, Series, Record>>();
-        public DisplayResult(List<Record> records)//List<Record> productionRecords, List<Record> consumptionRecords
+        public DisplayResult(List<Record> records)
         {
             InitializeComponent();
-            //this.productionRecords = productionRecords;
-            //this.consumptionRecords = consumptionRecords;
+
             this.records = records;
 
         }
@@ -51,7 +46,6 @@ namespace EC_Simulation
                 series.BorderWidth = 3;
                 series.Enabled = false;
                 chartTupleList.Add(new Tuple<CheckBox, Series, Record>(checkboxes[i], series, records[i]));
-                //checkboxSeriesPair.Add(checboxes[i], series);
                 checkboxes[i].Text = records[i].Name;
 
             }
@@ -62,6 +56,7 @@ namespace EC_Simulation
 
             chart1.ChartAreas[0].AxisX.IntervalType = DateTimeIntervalType.Auto;
             chart1.ChartAreas[0].AxisY.IntervalAutoMode = IntervalAutoMode.VariableCount;
+            chart1.ChartAreas[0].AxisX.Interval = 1;
             chart1.ChartAreas[0].AxisX.ScaleView.Zoom(0, 30);
 
             Record totalConRec = records.Find(x => x.Name == "Total Elec. Consumption") ?? throw new InvalidOperationException("Record could not be found!");
@@ -75,66 +70,11 @@ namespace EC_Simulation
             {
                 yearlyTotalProduction += pair.Value;
             }
-            yearlyTotalProductionLabel.Text += $" {yearlyTotalProduction}";
-            /*for (int i = 0; i < productionRecords.Count; i++)
-            {
-                int index = resultsComboBox.Items.Add($"Electricity production from {productionRecords[i].Name}");
-                indexRecordPairs.Add(index, productionRecords[i]);
-
-                if (checkboxes[i].Tag == "Production")
-                {
-
-                    Series series = chart1.Series.Add(productionRecords[i].Name);
-                    series.ChartType = SeriesChartType.Line;
-                    series.Enabled = false;
-                    chartTupleList.Add(new Tuple<CheckBox, Series, Record>(checkboxes[i], series, productionRecords[i]));
-                    //checkboxSeriesPair.Add(checboxes[i], series);
-                    checkboxes[i].Text = series.Name;
-                }
-            }
-            for (int i = 0; i < consumptionRecords.Count; i++)
-            {
-                int index = resultsComboBox.Items.Add($"Electricity production from {consumptionRecords[i].Name}");
-                indexRecordPairs.Add(index, consumptionRecords[i]);
-
-                if (checkboxes[i].Tag == "Consumption")
-                {
-                    Series series = chart1.Series.Add(consumptionRecords[i].Name);
-                    series.ChartType = SeriesChartType.Area;
-                    series.Enabled = false;
-                    chartTupleList.Add(new Tuple<CheckBox, Series, Record>(checkboxes[i], series, consumptionRecords[i]));
-                    //checkboxSeriesPair.Add(checboxes[i], series);
-                    checkboxes[i].Text = series.Name;
-                }
-            }*/
-
-            /*foreach (Record record in productionRecords)
-            {
-                int index = resultsComboBox.Items.Add($"Electricity production from {record.Name}");
-                indexRecordPairs.Add(index, record);
-            }
-            foreach (Record record in consumptionRecords)
-            {
-                int index = resultsComboBox.Items.Add($"Electricity consumption from {record.Name}");
-                indexRecordPairs.Add(index, record);
-            }
-
-            totalConsumptionIndex = resultsComboBox.Items.Add("Total Consumption");
-            totalProductionIndex = resultsComboBox.Items.Add("Total Production");*/
-
-
-
-            //chart1.ChartAreas[0].AxisX.Interval = 1;
-            //chart1.ChartAreas[0].AxisX.IntervalAutoMode = IntervalAutoMode.VariableCount;
-
-            //chart1.ChartAreas[0].AxisY.Interval = 20;
-
-
-            //chart1.ChartAreas[0].AxisY.ScaleView.Zoom(0, 500);
+            yearlyTotalProductionLabel.Text += $" {yearlyTotalProduction}";           
         }
         private void CheckBox_Checked(object sender, EventArgs e)
         {
-            CheckBox cb = (CheckBox)sender;
+            CheckBox cb = (CheckBox)sender ?? throw new InvalidOperationException("checkbox could not be found!"); 
             foreach (Tuple<CheckBox, Series, Record> chartTuple in chartTupleList)
             {
                 if (cb == chartTuple.Item1)
@@ -163,7 +103,7 @@ namespace EC_Simulation
 
         private void DrawGraph(object sender, EventArgs e)
         {
-            Button button = (Button)sender;
+            Button button = (Button)sender ?? throw new InvalidOperationException("button could not be found!"); ;
             foreach (var series in chart1.Series)
             {
                 series.Points.Clear();
@@ -180,6 +120,7 @@ namespace EC_Simulation
                             chart1.ChartAreas[0].AxisX.Title = "Hours";
                             chartTuple.Item2.ChartType = SeriesChartType.Spline;
                             chart1.ChartAreas[0].AxisX.IntervalType = DateTimeIntervalType.Auto;
+                            chart1.ChartAreas[0].AxisX.Interval = 1;
                             chart1.ChartAreas[0].AxisX.ScaleView.Zoom(0, 24);
                             foreach (KeyValuePair<DateTime, double> result in chartTuple.Item3.results)
                             {
@@ -193,6 +134,7 @@ namespace EC_Simulation
                             chart1.ChartAreas[0].AxisX.Title = "Days";
                             chartTuple.Item2.ChartType = SeriesChartType.Spline;
                             chart1.ChartAreas[0].AxisX.IntervalType = DateTimeIntervalType.Auto;
+                            chart1.ChartAreas[0].AxisX.Interval = 1;
                             chart1.ChartAreas[0].AxisX.ScaleView.Zoom(0, 31);
                             DateTime currentDay = records[0].results.Keys.First<DateTime>();
                             double dailyValue = 0;
@@ -289,81 +231,6 @@ namespace EC_Simulation
         }
 
     }
-    /* 
-                 chart1.Titles.Clear();
-            chart1.Series.Clear();
-            foreach (var series in chart1.Series)
-            {
-                series.Points.Clear();
-            }
-
-            List<DateTime> dates = new List<DateTime>(consumptionRecords[0].results.Keys);
-
-            DataGridView1.Columns.Clear();
-            DataGridView1.Columns.Add("DateColumn", "Date");
-            if (resultsComboBox.SelectedIndex == totalConsumptionIndex)
-            {
-                DataGridView1.Columns.Add("Value1", "Total Consumption");
-                chart1.Titles.Add("Total Consumption");
-                chart1.Series.Add("Total Consumption");
-                chart1.Series["Total Consumption"].ChartType = SeriesChartType.Area;
-                foreach (DateTime date in dates)
-                {
-                    double totalConsump = 0;
-                    foreach (Record record in consumptionRecords)
-                    {
-                        foreach (KeyValuePair<DateTime, double> result in record.results)
-                        {
-                            if (result.Key == date)
-                            {
-                                totalConsump += result.Value;
-                                break;
-                            }
-                        }
-                    }
-                    DataGridView1.Rows.Add(date.ToString(), totalConsump);
-                    chart1.Series["Total Consumption"].Points.AddXY(date.ToString(), totalConsump);
-                }
-                return;
-            }
-            if (resultsComboBox.SelectedIndex == totalProductionIndex)
-            {
-                DataGridView1.Columns.Add("Value1", "Total Production");
-                chart1.Titles.Add("Total Production");
-                chart1.Series.Add("Total Production");
-                chart1.Series["Total Production"].ChartType = SeriesChartType.Area;
-                foreach (DateTime date in dates)
-                {
-                    double totalProduction = 0;
-                    foreach (Record record in productionRecords)
-                    {
-                        foreach (KeyValuePair<DateTime, double> result in record.results)
-                        {
-                            if (result.Key == date)
-                            {
-                                totalProduction += result.Value;
-                                break;
-                            }
-                        }
-                    }
-                    DataGridView1.Rows.Add(date.ToString(), totalProduction);
-                    chart1.Series["Total Production"].Points.AddXY(date.ToString(), totalProduction);
-                }
-                return;
-            }
-            Record selectedRecord = indexRecordPairs[resultsComboBox.SelectedIndex];
-            chart1.Titles.Add(selectedRecord.Name);
-            chart1.Series.Add(selectedRecord.Name);
-            chart1.Series[selectedRecord.Name].ChartType = SeriesChartType.Area;
-
-            DataGridView1.Columns.Add("Value1", selectedRecord.Name);
-            foreach (KeyValuePair<DateTime, double> result in selectedRecord.results)
-            {
-                DataGridView1.Rows.Add(result.Key.ToString(), result.Value);
-                chart1.Series[selectedRecord.Name].Points.AddXY(result.Key.ToString(), result.Value);
-            }
-        }
-     
-     */
+   
 }
 

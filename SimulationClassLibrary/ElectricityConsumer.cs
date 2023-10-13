@@ -14,7 +14,7 @@ namespace SimulationClassLibrary
             Date = date;
             ConsumeValues = consumeValues;
         }
-        public DateTime Date; // Date of electricity consumption (dd.mm.yyyy hh:mm)
+        public DateTime Date; // Date of electricity consumption (dd.MM.yyyy HH:mm)
         public List<ConsumeValue> ConsumeValues; //List of units and consumed electricity
     }
     public struct ConsumeValue
@@ -30,7 +30,7 @@ namespace SimulationClassLibrary
     public  class ElectricityConsumer
     {
         public string name;
-        private int numberOfHousholds;
+        private int numberOfEntities;
         private List<HourlyConsumption> schedule;
         Random random = new Random();
         float minValue = 0.95f;
@@ -39,7 +39,7 @@ namespace SimulationClassLibrary
         public ElectricityConsumer(string name, int numberOfHousholds, List<HourlyConsumption> schedules)
         {
             this.name = name;
-            this.numberOfHousholds = numberOfHousholds;
+            this.numberOfEntities = numberOfHousholds;
             this.schedule = schedules;
         }
         public float ConsumeElectricity(Hour hour) // kWh because of data
@@ -57,30 +57,13 @@ namespace SimulationClassLibrary
                     }
                 }
             }
-            for(int i = 0; i < numberOfHousholds; i++)
+            for(int i = 0; i < numberOfEntities; i++)
             {
                 float randomConsumptionValueMultiplier = (float)random.NextDouble() * (maxValue - minValue) + minValue;
                 totalConsumption += hourlyConsumption * randomConsumptionValueMultiplier;
             }
-            return totalConsumption; // * numberOfHousholds.
+            return totalConsumption;
         }
-        /*public float ConsumeElectricity(Hour hour, Event ev) 
-        {
-            float totalConsumption = 0;
-            float evValMultiplier = 1;
-            foreach (HourlyConsumption hourlyCon in schedule)
-            {
-                if (DateTime.Compare(hour.Date, hourlyCon.Date) == 0) //all consume values are under single date
-                {
-                    foreach (ConsumeValue consumption in hourlyCon.ConsumeValues)
-                    {
-                        if (consumption.Name == ev.EffectedUnitName) evValMultiplier = ev.EffectValue;
 
-                        totalConsumption += consumption.Value * evValMultiplier;
-                    }
-                }
-            }
-            return totalConsumption * numberOfHousholds;
-        }*/
     }
 }
